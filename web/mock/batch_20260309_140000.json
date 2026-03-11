@@ -1,0 +1,661 @@
+[
+  {
+    "news": {
+      "news_id": "seed-001",
+      "title": "Fed hints at slower rate cuts amid sticky inflation",
+      "content": "Federal Reserve officials signal a cautious approach amid sticky inflation, suggesting fewer rate cuts than markets expected.",
+      "source": "https://feeds.reuters.com/reuters/businessNews",
+      "url": "https://reuters.com/fed-rate-cuts",
+      "published_at": "2026-03-09T07:30:00+00:00",
+      "embedding_preview": [
+        0.012,
+        -0.034,
+        0.056,
+        0.078,
+        -0.091,
+        0.023,
+        -0.045,
+        0.067
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "a1b2c3d4e5f6a1b2c3d4e5f6",
+        "name": "Federal Reserve",
+        "type": "ORG",
+        "confidence": 0.98
+      },
+      {
+        "entity_id": "b2c3d4e5f6a1b2c3d4e5f6a1",
+        "name": "US",
+        "type": "LOC",
+        "confidence": 0.95
+      }
+    ],
+    "topic": {
+      "topic_id": 0,
+      "probability": 0.88,
+      "label": "inflation, rates, fed, monetary, economy"
+    },
+    "impacts": [
+      {
+        "src": "a1b2c3d4e5f6a1b2c3d4e5f6",
+        "dst": "b2c3d4e5f6a1b2c3d4e5f6a1",
+        "weight": 0.92
+      }
+    ],
+    "classification": {
+      "category": "financial_market",
+      "confidence": 0.832,
+      "all_scores": {
+        "financial_market": 0.832,
+        "policy_regulation": 0.089,
+        "macro_economy": 0.052,
+        "company_event": 0.015,
+        "industry_trend": 0.012
+      }
+    },
+    "features": {
+      "market_impact": 2.71,
+      "price_signal": 4.55,
+      "regulatory_risk": 3.19,
+      "timeliness": 2.85,
+      "impact": 3.17,
+      "controversy": 3.24,
+      "generalizability": 4.74,
+      "impact_score": 3.65
+    },
+    "report": {
+      "news_id": "seed-001",
+      "final_score": 64.27,
+      "impact_level": "中",
+      "dk_cot_scores": {
+        "stock_relevance": 80.35,
+        "market_sentiment": 63.64,
+        "policy_risk": 40.99,
+        "spread_breadth": 56.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=4.5→89, market_impact=2.7→43, trend=rising, score=80.3\n  [市场情绪] controversy=3.2→56, impact=3.2→54, clf_confidence=0.83, score=63.6\n  [政策风险] regulatory_risk=3.2→55, policy_prob=0.09, category=financial_market, score=41.0\n  [传播广度] entities=2→20, source_score=70, topic_news_count=18→90, score=56.0\n  → 加权得分=64.27, 等级=中",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: Fed hints at slower rate cuts amid sticky inflation\n**ID**: `seed-001`\n**分类**: financial_market (置信度 83.2%)\n**影响等级**: **中** (得分 64.3/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 80.3 | 40% |\n| 市场情绪 | 63.6 | 20% |\n| 政策风险 | 41.0 | 20% |\n| 传播广度 | 56.0 | 20% |\n| **加权总分** | **64.3** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=4.5→89, market_impact=2.7→43, trend=rising, score=80.3\n  [市场情绪] controversy=3.2→56, impact=3.2→54, clf_confidence=0.83, score=63.6\n  [政策风险] regulatory_risk=3.2→55, policy_prob=0.09, category=financial_market, score=41.0\n  [传播广度] entities=2→20, source_score=70, topic_news_count=18→90, score=56.0\n  → 加权得分=64.27, 等级=中\n```\n\n### 趋势上下文\n\n- 趋势方向: rising\n- 窗口平均影响: 4.00\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "时序折线图: 主题影响趋势 (方向=rising, 窗口内 18 条新闻)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "seed-002",
+      "title": "NVIDIA signs major cloud AI chip deal with hyperscaler",
+      "content": "Large hyperscaler partnership may boost semiconductor supply chain and reshape AI infrastructure spending.",
+      "source": "https://feeds.reuters.com/reuters/businessNews",
+      "url": "https://reuters.com/nvidia-ai-deal",
+      "published_at": "2026-03-09T07:35:00+00:00",
+      "embedding_preview": [
+        0.034,
+        -0.012,
+        0.089,
+        0.045,
+        -0.067,
+        0.011,
+        -0.023,
+        0.056
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "c3d4e5f6a1b2c3d4e5f6a1b2",
+        "name": "NVIDIA",
+        "type": "ORG",
+        "confidence": 0.99
+      },
+      {
+        "entity_id": "d4e5f6a1b2c3d4e5f6a1b2c3",
+        "name": "AI",
+        "type": "MISC",
+        "confidence": 0.87
+      }
+    ],
+    "topic": {
+      "topic_id": 1,
+      "probability": 0.91,
+      "label": "nvidia, ai, chip, semiconductor, cloud"
+    },
+    "impacts": [
+      {
+        "src": "c3d4e5f6a1b2c3d4e5f6a1b2",
+        "dst": "d4e5f6a1b2c3d4e5f6a1b2c3",
+        "weight": 0.85
+      }
+    ],
+    "classification": {
+      "category": "company_event",
+      "confidence": 0.745,
+      "all_scores": {
+        "company_event": 0.745,
+        "industry_trend": 0.142,
+        "financial_market": 0.078,
+        "policy_regulation": 0.021,
+        "macro_economy": 0.014
+      }
+    },
+    "features": {
+      "market_impact": 3.45,
+      "price_signal": 3.89,
+      "regulatory_risk": 1.56,
+      "timeliness": 3.92,
+      "impact": 4.11,
+      "controversy": 2.34,
+      "generalizability": 3.67,
+      "impact_score": 3.42
+    },
+    "report": {
+      "news_id": "seed-002",
+      "final_score": 46.84,
+      "impact_level": "中",
+      "dk_cot_scores": {
+        "stock_relevance": 67.85,
+        "market_sentiment": 59.08,
+        "policy_risk": 10.43,
+        "spread_breadth": 29.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=3.9→72, market_impact=3.5→61, trend=N/A, score=67.9\n  [市场情绪] controversy=2.3→34, impact=4.1→78, clf_confidence=0.74, score=59.1\n  [政策风险] regulatory_risk=1.6→14, policy_prob=0.02, category=company_event, score=10.4\n  [传播广度] entities=2→20, source_score=70, topic_news_count=0→0, score=29.0\n  → 加权得分=46.84, 等级=中",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: NVIDIA signs major cloud AI chip deal with hyperscaler\n**ID**: `seed-002`\n**分类**: company_event (置信度 74.5%)\n**影响等级**: **中** (得分 46.8/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 67.8 | 40% |\n| 市场情绪 | 59.1 | 20% |\n| 政策风险 | 10.4 | 20% |\n| 传播广度 | 29.0 | 20% |\n| **加权总分** | **46.8** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=3.9→72, market_impact=3.5→61, trend=N/A, score=67.9\n  [市场情绪] controversy=2.3→34, impact=4.1→78, clf_confidence=0.74, score=59.1\n  [政策风险] regulatory_risk=1.6→14, policy_prob=0.02, category=company_event, score=10.4\n  [传播广度] entities=2→20, source_score=70, topic_news_count=0→0, score=29.0\n  → 加权得分=46.84, 等级=中\n```\n\n### 趋势上下文\n\n- 趋势方向: N/A\n- 窗口平均影响: 0.00\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "rss-003",
+      "title": "EU passes sweeping AI regulation for financial services",
+      "content": "European Union finalizes comprehensive AI governance framework targeting algorithmic trading and automated lending.",
+      "source": "https://rsshub.app/caixin/latest",
+      "url": "https://caixin.com/eu-ai-regulation",
+      "published_at": "2026-03-09T08:10:00+00:00",
+      "embedding_preview": [
+        0.078,
+        -0.056,
+        0.034,
+        0.012,
+        -0.045,
+        0.089,
+        -0.011,
+        0.023
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "e5f6a1b2c3d4e5f6a1b2c3d4",
+        "name": "European Union",
+        "type": "ORG",
+        "confidence": 0.97
+      },
+      {
+        "entity_id": "f6a1b2c3d4e5f6a1b2c3d4e5",
+        "name": "AI",
+        "type": "MISC",
+        "confidence": 0.91
+      }
+    ],
+    "topic": {
+      "topic_id": 2,
+      "probability": 0.79,
+      "label": "regulation, eu, ai, governance, compliance"
+    },
+    "impacts": [
+      {
+        "src": "e5f6a1b2c3d4e5f6a1b2c3d4",
+        "dst": "f6a1b2c3d4e5f6a1b2c3d4e5",
+        "weight": 0.78
+      }
+    ],
+    "classification": {
+      "category": "policy_regulation",
+      "confidence": 0.891,
+      "all_scores": {
+        "policy_regulation": 0.891,
+        "industry_trend": 0.056,
+        "financial_market": 0.032,
+        "company_event": 0.012,
+        "macro_economy": 0.009
+      }
+    },
+    "features": {
+      "market_impact": 2.12,
+      "price_signal": 1.67,
+      "regulatory_risk": 4.82,
+      "timeliness": 3.45,
+      "impact": 3.78,
+      "controversy": 4.23,
+      "generalizability": 4.56,
+      "impact_score": 3.58
+    },
+    "report": {
+      "news_id": "rss-003",
+      "final_score": 52.68,
+      "impact_level": "中",
+      "dk_cot_scores": {
+        "stock_relevance": 21.25,
+        "market_sentiment": 79.88,
+        "policy_risk": 100.0,
+        "spread_breadth": 41.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=1.7→17, market_impact=2.1→28, trend=stable, score=21.2\n  [市场情绪] controversy=4.2→81, impact=3.8→70, clf_confidence=0.89, score=79.9\n  [政策风险] regulatory_risk=4.8→96, policy_prob=0.89, category=policy_regulation, score=100.0\n  [传播广度] entities=2→20, source_score=70, topic_news_count=8→40, score=41.0\n  → 加权得分=52.68, 等级=中",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: EU passes sweeping AI regulation for financial services\n**ID**: `rss-003`\n**分类**: policy_regulation (置信度 89.1%)\n**影响等级**: **中** (得分 52.7/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 21.2 | 40% |\n| 市场情绪 | 79.9 | 20% |\n| 政策风险 | 100.0 | 20% |\n| 传播广度 | 41.0 | 20% |\n| **加权总分** | **52.7** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=1.7→17, market_impact=2.1→28, trend=stable, score=21.2\n  [市场情绪] controversy=4.2→81, impact=3.8→70, clf_confidence=0.89, score=79.9\n  [政策风险] regulatory_risk=4.8→96, policy_prob=0.89, category=policy_regulation, score=100.0\n  [传播广度] entities=2→20, source_score=70, topic_news_count=8→40, score=41.0\n  → 加权得分=52.68, 等级=中\n```\n\n### 趋势上下文\n\n- 趋势方向: stable\n- 窗口平均影响: 3.20\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "时序折线图: 主题影响趋势 (方向=stable, 窗口内 8 条新闻)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "rss-004",
+      "title": "China GDP growth beats expectations at 5.2% in Q1",
+      "content": "China's economy expanded 5.2% year-on-year in the first quarter, exceeding analyst forecasts of 4.8%.",
+      "source": "https://rsshub.app/caixin/latest",
+      "url": "https://caixin.com/china-gdp-q1",
+      "published_at": "2026-03-09T09:00:00+00:00",
+      "embedding_preview": [
+        0.045,
+        -0.023,
+        0.067,
+        0.089,
+        -0.034,
+        0.056,
+        -0.078,
+        0.012
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "a2b3c4d5e6f7a2b3c4d5e6f7",
+        "name": "China",
+        "type": "LOC",
+        "confidence": 0.99
+      },
+      {
+        "entity_id": "b3c4d5e6f7a2b3c4d5e6f7a2",
+        "name": "GDP",
+        "type": "MISC",
+        "confidence": 0.82
+      }
+    ],
+    "topic": {
+      "topic_id": 0,
+      "probability": 0.72,
+      "label": "inflation, rates, fed, monetary, economy"
+    },
+    "impacts": [
+      {
+        "src": "a2b3c4d5e6f7a2b3c4d5e6f7",
+        "dst": "b3c4d5e6f7a2b3c4d5e6f7a2",
+        "weight": 0.88
+      }
+    ],
+    "classification": {
+      "category": "macro_economy",
+      "confidence": 0.912,
+      "all_scores": {
+        "macro_economy": 0.912,
+        "financial_market": 0.045,
+        "policy_regulation": 0.023,
+        "company_event": 0.012,
+        "industry_trend": 0.008
+      }
+    },
+    "features": {
+      "market_impact": 3.89,
+      "price_signal": 3.12,
+      "regulatory_risk": 1.23,
+      "timeliness": 4.56,
+      "impact": 4.34,
+      "controversy": 2.67,
+      "generalizability": 4.89,
+      "impact_score": 3.78
+    },
+    "report": {
+      "news_id": "rss-004",
+      "final_score": 53.34,
+      "impact_level": "中",
+      "dk_cot_scores": {
+        "stock_relevance": 70.7,
+        "market_sentiment": 69.11,
+        "policy_risk": 4.71,
+        "spread_breadth": 51.5
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=3.1→53, market_impact=3.9→72, trend=rising, score=70.7\n  [市场情绪] controversy=2.7→42, impact=4.3→84, clf_confidence=0.91, score=69.1\n  [政策风险] regulatory_risk=1.2→6, policy_prob=0.02, category=macro_economy, score=4.7\n  [传播广度] entities=2→20, source_score=70, topic_news_count=15→75, score=51.5\n  → 加权得分=53.34, 等级=中",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: China GDP growth beats expectations at 5.2% in Q1\n**ID**: `rss-004`\n**分类**: macro_economy (置信度 91.2%)\n**影响等级**: **中** (得分 53.3/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 70.7 | 40% |\n| 市场情绪 | 69.1 | 20% |\n| 政策风险 | 4.7 | 20% |\n| 传播广度 | 51.5 | 20% |\n| **加权总分** | **53.3** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=3.1→53, market_impact=3.9→72, trend=rising, score=70.7\n  [市场情绪] controversy=2.7→42, impact=4.3→84, clf_confidence=0.91, score=69.1\n  [政策风险] regulatory_risk=1.2→6, policy_prob=0.02, category=macro_economy, score=4.7\n  [传播广度] entities=2→20, source_score=70, topic_news_count=15→75, score=51.5\n  → 加权得分=53.34, 等级=中\n```\n\n### 趋势上下文\n\n- 趋势方向: rising\n- 窗口平均影响: 3.80\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "时序折线图: 主题影响趋势 (方向=rising, 窗口内 15 条新闻)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "rss-005",
+      "title": "Tesla recalls 1.2M vehicles over autopilot software defect",
+      "content": "NHTSA investigation finds critical edge-case failures in Tesla's Full Self-Driving beta software.",
+      "source": "https://feeds.reuters.com/reuters/businessNews",
+      "url": "https://reuters.com/tesla-recall",
+      "published_at": "2026-03-09T10:15:00+00:00",
+      "embedding_preview": [
+        0.091,
+        -0.078,
+        0.023,
+        0.056,
+        -0.012,
+        0.034,
+        -0.067,
+        0.045
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "c4d5e6f7a2b3c4d5e6f7a2b3",
+        "name": "Tesla",
+        "type": "ORG",
+        "confidence": 0.99
+      },
+      {
+        "entity_id": "d5e6f7a2b3c4d5e6f7a2b3c4",
+        "name": "NHTSA",
+        "type": "ORG",
+        "confidence": 0.96
+      }
+    ],
+    "topic": {
+      "topic_id": 1,
+      "probability": 0.65,
+      "label": "nvidia, ai, chip, semiconductor, cloud"
+    },
+    "impacts": [
+      {
+        "src": "c4d5e6f7a2b3c4d5e6f7a2b3",
+        "dst": "d5e6f7a2b3c4d5e6f7a2b3c4",
+        "weight": 0.91
+      }
+    ],
+    "classification": {
+      "category": "company_event",
+      "confidence": 0.867,
+      "all_scores": {
+        "company_event": 0.867,
+        "policy_regulation": 0.078,
+        "industry_trend": 0.034,
+        "financial_market": 0.012,
+        "macro_economy": 0.009
+      }
+    },
+    "features": {
+      "market_impact": 4.12,
+      "price_signal": 4.34,
+      "regulatory_risk": 3.89,
+      "timeliness": 4.78,
+      "impact": 4.56,
+      "controversy": 4.91,
+      "generalizability": 3.23,
+      "impact_score": 4.12
+    },
+    "report": {
+      "news_id": "rss-005",
+      "final_score": 77.26,
+      "impact_level": "高",
+      "dk_cot_scores": {
+        "stock_relevance": 91.3,
+        "market_sentiment": 91.81,
+        "policy_risk": 52.91,
+        "spread_breadth": 59.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=4.3→84, market_impact=4.1→78, trend=rising, score=91.3\n  [市场情绪] controversy=4.9→98, impact=4.6→89, clf_confidence=0.87, score=91.8\n  [政策风险] regulatory_risk=3.9→72, policy_prob=0.08, category=company_event, score=52.9\n  [传播广度] entities=2→20, source_score=70, topic_news_count=22→100, score=59.0\n  → 加权得分=77.26, 等级=高",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: Tesla recalls 1.2M vehicles over autopilot software defect\n**ID**: `rss-005`\n**分类**: company_event (置信度 86.7%)\n**影响等级**: **高** (得分 77.3/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 91.3 | 40% |\n| 市场情绪 | 91.8 | 20% |\n| 政策风险 | 52.9 | 20% |\n| 传播广度 | 59.0 | 20% |\n| **加权总分** | **77.3** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=4.3→84, market_impact=4.1→78, trend=rising, score=91.3\n  [市场情绪] controversy=4.9→98, impact=4.6→89, clf_confidence=0.87, score=91.8\n  [政策风险] regulatory_risk=3.9→72, policy_prob=0.08, category=company_event, score=52.9\n  [传播广度] entities=2→20, source_score=70, topic_news_count=22→100, score=59.0\n  → 加权得分=77.26, 等级=高\n```\n\n### 趋势上下文\n\n- 趋势方向: rising\n- 窗口平均影响: 4.50\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "时序折线图: 主题影响趋势 (方向=rising, 窗口内 22 条新闻)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "rss-006",
+      "title": "Bank of Japan ends negative interest rate policy",
+      "content": "BOJ raises short-term rates for the first time in 17 years, marking historic shift in monetary policy.",
+      "source": "https://feeds.reuters.com/reuters/businessNews",
+      "url": "https://reuters.com/boj-rate-hike",
+      "published_at": "2026-03-09T11:00:00+00:00",
+      "embedding_preview": [
+        0.056,
+        -0.045,
+        0.078,
+        0.023,
+        -0.089,
+        0.067,
+        -0.012,
+        0.034
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "e6f7a2b3c4d5e6f7a2b3c4d5",
+        "name": "Bank of Japan",
+        "type": "ORG",
+        "confidence": 0.98
+      },
+      {
+        "entity_id": "f7a2b3c4d5e6f7a2b3c4d5e6",
+        "name": "Japan",
+        "type": "LOC",
+        "confidence": 0.97
+      }
+    ],
+    "topic": {
+      "topic_id": 0,
+      "probability": 0.84,
+      "label": "inflation, rates, fed, monetary, economy"
+    },
+    "impacts": [
+      {
+        "src": "e6f7a2b3c4d5e6f7a2b3c4d5",
+        "dst": "f7a2b3c4d5e6f7a2b3c4d5e6",
+        "weight": 0.95
+      }
+    ],
+    "classification": {
+      "category": "financial_market",
+      "confidence": 0.778,
+      "all_scores": {
+        "financial_market": 0.778,
+        "policy_regulation": 0.134,
+        "macro_economy": 0.056,
+        "company_event": 0.019,
+        "industry_trend": 0.013
+      }
+    },
+    "features": {
+      "market_impact": 4.67,
+      "price_signal": 4.89,
+      "regulatory_risk": 2.34,
+      "timeliness": 4.91,
+      "impact": 4.78,
+      "controversy": 3.56,
+      "generalizability": 4.91,
+      "impact_score": 4.38
+    },
+    "report": {
+      "news_id": "rss-006",
+      "final_score": 72.75,
+      "impact_level": "中",
+      "dk_cot_scores": {
+        "stock_relevance": 100.0,
+        "market_sentiment": 77.29,
+        "policy_risk": 27.47,
+        "spread_breadth": 59.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=4.9→97, market_impact=4.7→92, trend=rising, score=100.0\n  [市场情绪] controversy=3.6→64, impact=4.8→94, clf_confidence=0.78, score=77.3\n  [政策风险] regulatory_risk=2.3→34, policy_prob=0.13, category=financial_market, score=27.5\n  [传播广度] entities=2→20, source_score=70, topic_news_count=25→100, score=59.0\n  → 加权得分=72.75, 等级=中",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: Bank of Japan ends negative interest rate policy\n**ID**: `rss-006`\n**分类**: financial_market (置信度 77.8%)\n**影响等级**: **中** (得分 72.8/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 100.0 | 40% |\n| 市场情绪 | 77.3 | 20% |\n| 政策风险 | 27.5 | 20% |\n| 传播广度 | 59.0 | 20% |\n| **加权总分** | **72.8** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=4.9→97, market_impact=4.7→92, trend=rising, score=100.0\n  [市场情绪] controversy=3.6→64, impact=4.8→94, clf_confidence=0.78, score=77.3\n  [政策风险] regulatory_risk=2.3→34, policy_prob=0.13, category=financial_market, score=27.5\n  [传播广度] entities=2→20, source_score=70, topic_news_count=25→100, score=59.0\n  → 加权得分=72.75, 等级=中\n```\n\n### 趋势上下文\n\n- 趋势方向: rising\n- 窗口平均影响: 4.80\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "时序折线图: 主题影响趋势 (方向=rising, 窗口内 25 条新闻)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "rss-007",
+      "title": "Local bakery wins regional award for sourdough bread",
+      "content": "A small-town bakery received recognition at the annual regional food competition for its artisan sourdough.",
+      "source": "https://rsshub.app/weibo/search/hot/财经",
+      "url": "https://weibo.com/bakery-award",
+      "published_at": "2026-03-09T12:30:00+00:00",
+      "embedding_preview": [
+        0.011,
+        -0.008,
+        0.005,
+        0.003,
+        -0.002,
+        0.007,
+        -0.004,
+        0.006
+      ]
+    },
+    "entities": [],
+    "topic": {
+      "topic_id": 3,
+      "probability": 0.34,
+      "label": "outlier"
+    },
+    "impacts": [],
+    "classification": {
+      "category": "industry_trend",
+      "confidence": 0.312,
+      "all_scores": {
+        "industry_trend": 0.312,
+        "company_event": 0.278,
+        "macro_economy": 0.189,
+        "financial_market": 0.134,
+        "policy_regulation": 0.087
+      }
+    },
+    "features": {
+      "market_impact": 1.12,
+      "price_signal": 1.05,
+      "regulatory_risk": 1.02,
+      "timeliness": 1.34,
+      "impact": 1.08,
+      "controversy": 1.15,
+      "generalizability": 1.09,
+      "impact_score": 1.11
+    },
+    "report": {
+      "news_id": "rss-007",
+      "final_score": 7.26,
+      "impact_level": "低",
+      "dk_cot_scores": {
+        "stock_relevance": 1.95,
+        "market_sentiment": 11.46,
+        "policy_risk": 2.96,
+        "spread_breadth": 18.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=1.1→1, market_impact=1.1→3, trend=N/A, score=2.0\n  [市场情绪] controversy=1.1→4, impact=1.1→2, clf_confidence=0.31, score=11.5\n  [政策风险] regulatory_risk=1.0→1, policy_prob=0.09, category=industry_trend, score=3.0\n  [传播广度] entities=0→0, source_score=60, topic_news_count=0→0, score=18.0\n  → 加权得分=7.26, 等级=低",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: Local bakery wins regional award for sourdough bread\n**ID**: `rss-007`\n**分类**: industry_trend (置信度 31.2%)\n**影响等级**: **低** (得分 7.3/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 1.9 | 40% |\n| 市场情绪 | 11.5 | 20% |\n| 政策风险 | 3.0 | 20% |\n| 传播广度 | 18.0 | 20% |\n| **加权总分** | **7.3** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=1.1→1, market_impact=1.1→3, trend=N/A, score=2.0\n  [市场情绪] controversy=1.1→4, impact=1.1→2, clf_confidence=0.31, score=11.5\n  [政策风险] regulatory_risk=1.0→1, policy_prob=0.09, category=industry_trend, score=3.0\n  [传播广度] entities=0→0, source_score=60, topic_news_count=0→0, score=18.0\n  → 加权得分=7.26, 等级=低\n```\n\n### 趋势上下文\n\n- 趋势方向: N/A\n- 窗口平均影响: 0.00\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  },
+  {
+    "news": {
+      "news_id": "rss-008",
+      "title": "SEC proposes new crypto exchange disclosure requirements",
+      "content": "Securities and Exchange Commission unveils draft rules requiring enhanced transparency from cryptocurrency trading platforms.",
+      "source": "https://feeds.reuters.com/reuters/businessNews",
+      "url": "https://reuters.com/sec-crypto-rules",
+      "published_at": "2026-03-09T13:45:00+00:00",
+      "embedding_preview": [
+        0.067,
+        -0.034,
+        0.089,
+        0.045,
+        -0.056,
+        0.023,
+        -0.078,
+        0.012
+      ]
+    },
+    "entities": [
+      {
+        "entity_id": "a3b4c5d6e7f8a3b4c5d6e7f8",
+        "name": "SEC",
+        "type": "ORG",
+        "confidence": 0.98
+      },
+      {
+        "entity_id": "b4c5d6e7f8a3b4c5d6e7f8a3",
+        "name": "cryptocurrency",
+        "type": "MISC",
+        "confidence": 0.89
+      }
+    ],
+    "topic": {
+      "topic_id": 2,
+      "probability": 0.82,
+      "label": "regulation, eu, ai, governance, compliance"
+    },
+    "impacts": [
+      {
+        "src": "a3b4c5d6e7f8a3b4c5d6e7f8",
+        "dst": "b4c5d6e7f8a3b4c5d6e7f8a3",
+        "weight": 0.82
+      }
+    ],
+    "classification": {
+      "category": "policy_regulation",
+      "confidence": 0.923,
+      "all_scores": {
+        "policy_regulation": 0.923,
+        "financial_market": 0.045,
+        "company_event": 0.018,
+        "industry_trend": 0.009,
+        "macro_economy": 0.005
+      }
+    },
+    "features": {
+      "market_impact": 3.23,
+      "price_signal": 2.89,
+      "regulatory_risk": 4.91,
+      "timeliness": 4.12,
+      "impact": 3.67,
+      "controversy": 4.45,
+      "generalizability": 4.12,
+      "impact_score": 3.89
+    },
+    "report": {
+      "news_id": "rss-008",
+      "final_score": 65.5,
+      "impact_level": "中",
+      "dk_cot_scores": {
+        "stock_relevance": 50.65,
+        "market_sentiment": 82.22,
+        "policy_risk": 100.0,
+        "spread_breadth": 44.0
+      },
+      "reasoning": "DK-CoT 推理链:\n  [股价相关性] price_signal=2.9→47, market_impact=3.2→56, trend=stable, score=50.6\n  [市场情绪] controversy=4.5→86, impact=3.7→67, clf_confidence=0.92, score=82.2\n  [政策风险] regulatory_risk=4.9→98, policy_prob=0.92, category=policy_regulation, score=100.0\n  [传播广度] entities=2→20, source_score=70, topic_news_count=10→50, score=44.0\n  → 加权得分=65.5, 等级=中",
+      "markdown": "## 金融影响评估报告\n\n**新闻**: SEC proposes new crypto exchange disclosure requirements\n**ID**: `rss-008`\n**分类**: policy_regulation (置信度 92.3%)\n**影响等级**: **中** (得分 65.5/100)\n\n### DK-CoT 四维评分\n\n| 维度 | 得分 | 权重 |\n|------|------|------|\n| 股价相关性 | 50.6 | 40% |\n| 市场情绪 | 82.2 | 20% |\n| 政策风险 | 100.0 | 20% |\n| 传播广度 | 44.0 | 20% |\n| **加权总分** | **65.5** | |\n\n### 推理过程\n\n```\nDK-CoT 推理链:\n  [股价相关性] price_signal=2.9→47, market_impact=3.2→56, trend=stable, score=50.6\n  [市场情绪] controversy=4.5→86, impact=3.7→67, clf_confidence=0.92, score=82.2\n  [政策风险] regulatory_risk=4.9→98, policy_prob=0.92, category=policy_regulation, score=100.0\n  [传播广度] entities=2→20, source_score=70, topic_news_count=10→50, score=44.0\n  → 加权得分=65.5, 等级=中\n```\n\n### 趋势上下文\n\n- 趋势方向: stable\n- 窗口平均影响: 3.50\n",
+      "viz_suggestions": [
+        "雷达图: 四维评分对比 (stock_relevance / market_sentiment / policy_risk / spread_breadth)",
+        "时序折线图: 主题影响趋势 (方向=stable, 窗口内 10 条新闻)",
+        "柱状图: 同主题新闻影响得分分布"
+      ]
+    }
+  }
+]

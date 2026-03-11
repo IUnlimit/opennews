@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenNews — 金融新闻影响评估</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shell">
+  <!-- header -->
+  <header class="hdr">
+    <div class="hdr-left">
+      <span class="hdr-logo">◆</span>
+      <span class="hdr-title">OPENNEWS</span>
+      <span class="hdr-sub">IMPACT TERMINAL</span>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-stat" id="statTotal">—</span>
+      <span class="hdr-stat-label">条新闻</span>
+      <span class="hdr-divider">│</span>
+      <span class="hdr-stat" id="statTopics">—</span>
+      <span class="hdr-stat-label">个主题</span>
+      <span class="hdr-divider">│</span>
+      <span class="hdr-badge hdr-badge--high" id="statHigh">—</span>
+      <span class="hdr-badge hdr-badge--mid" id="statMid">—</span>
+      <span class="hdr-badge hdr-badge--low" id="statLow">—</span>
+    </div>
+  </header>
+
+  <!-- chart + range -->
+  <section class="chart-section">
+    <div class="chart-header">
+      <span class="chart-label">SCORE DISTRIBUTION</span>
+      <span class="chart-range-text" id="rangeText">0.0 — 100.0</span>
+    </div>
+    <canvas id="distChart" width="960" height="140"></canvas>
+    <div class="range-wrap">
+      <div class="range-track" id="rangeTrack">
+        <div class="range-fill" id="rangeFill"></div>
+        <div class="range-thumb range-thumb--lo" id="thumbLo" tabindex="0"></div>
+        <div class="range-thumb range-thumb--hi" id="thumbHi" tabindex="0"></div>
+      </div>
+      <div class="range-labels">
+        <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span>
+        <span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- topic groups -->
+  <section class="topics" id="topicList">
+    <div class="topics-loading">加载中…</div>
+  </section>
+
+  <!-- detail panel (overlay) -->
+  <aside class="detail-panel" id="detailPanel">
+    <button class="detail-close" id="detailClose">✕</button>
+    <div class="detail-body" id="detailBody"></div>
+  </aside>
+</div>
+
+<!-- data source selector -->
+<div class="source-bar" id="sourceBar">
+  <label class="source-label">数据源</label>
+  <select id="sourceSelect">
+    <option value="mock">Mock 数据</option>
+  </select>
+  <button class="source-btn" id="sourceLoad">加载</button>
+  <input type="file" id="fileInput" accept=".json" style="display:none">
+  <button class="source-btn" id="fileBtn">导入 JSON</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
