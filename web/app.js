@@ -111,7 +111,7 @@ async function fetchBatchList() {
   } catch { return []; }
 }
 
-async function loadData(source) {
+async function loadData(source, { preserveState = false } = {}) {
   let data;
   if (source === 'latest') {
     try {
@@ -149,9 +149,20 @@ async function loadData(source) {
     $topicList.innerHTML = '<div class="topics-loading">该批次数据中无有效记录（缺少 news 或 report 字段）</div>';
     return;
   }
-  rangeLo = 0;
-  rangeHi = 100;
+
+  if (!preserveState) {
+    rangeLo = 0;
+    rangeHi = 100;
+  }
   applyFilter();
+
+  // 自动刷新时：如果详情侧边栏打开，用新数据刷新内容
+  if (preserveState && activeNewsId) {
+    const stillExists = allItems.find(d => d.news?.news_id === activeNewsId);
+    if (stillExists) {
+      showDetail(activeNewsId);
+    }
+  }
 }
 
 async function refreshBatchSelect() {
@@ -188,7 +199,7 @@ function startAutoRefresh() {
   autoRefreshTimer = setInterval(async () => {
     const $sel = document.getElementById('sourceSelect');
     if ($sel.value === 'latest') {
-      await loadData('latest');
+      await loadData('latest', { preserveState: true });
       await refreshBatchSelect();
     }
   }, AUTO_REFRESH_INTERVAL);
@@ -363,6 +374,12 @@ function initRangeSlider() {
 
 // ── render topics ────────────────────────────────────────
 function renderTopics() {
+  // 记录当前展开的 topic
+  const openTopics = new Set();
+  document.querySelectorAll('.topic-card.open').forEach(el => {
+    openTopics.add(el.dataset.tid);
+  });
+
   // group by topic_id
   const groups = new Map();
   filteredItems.forEach(item => {
@@ -399,8 +416,11 @@ function renderTopics() {
     // sort items by score desc
     g.items.sort((a, b) => (b.report?.final_score ?? 0) - (a.report?.final_score ?? 0));
 
+    // 恢复展开状态
+    const isOpen = openTopics.has(String(g.topic_id));
+
     return `
-      <div class="topic-card" data-tid="${g.topic_id}">
+      <div class="topic-card${isOpen ? ' open' : ''}" data-tid="${g.topic_id}">
         <div class="topic-head" onclick="toggleTopic(${g.topic_id})">
           <span class="topic-arrow">▶</span>
           <span class="topic-id">T${g.topic_id}</span>
@@ -575,8 +595,10 @@ window.showDetail = function(nid) {
 
     ${report.reasoning ? `
       <div class="d-section">
-        <div class="d-section-title">DK-COT 推理过程</div>
-        <div class="d-reasoning">${escHtml(report.reasoning)}</div>
+        <details class="d-reasoning-toggle">
+          <summary class="d-section-title" style="cursor:pointer;user-select:none">DK-COT 推理过程 <span style="font-size:10px;color:var(--text-dim);font-weight:400">▶ 展开</span></summary>
+          <div class="d-reasoning">${escHtml(report.reasoning)}</div>
+        </details>
       </div>
     ` : ''}
 
@@ -596,6 +618,13 @@ window.showDetail = function(nid) {
     });
   });
 };
+
+// details 展开/折叠提示文字切换
+$detailBody.addEventListener('toggle', (e) => {
+  if (e.target.tagName !== 'DETAILS') return;
+  const hint = e.target.querySelector('summary span');
+  if (hint) hint.textContent = e.target.open ? '▼ 折叠' : '▶ 展开';
+}, true);
 
 $detailClose.addEventListener('click', () => {
   $detailPanel.classList.remove('open');
