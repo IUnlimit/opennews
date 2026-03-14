@@ -5,6 +5,7 @@ import logging
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from opennews.config import settings
+from opennews.db import ensure_schema as ensure_pg_schema
 from opennews.workflow.langgraph_pipeline import run_once
 
 logging.basicConfig(
@@ -23,6 +24,12 @@ def job() -> None:
 
 
 def start_scheduler() -> None:
+    # 启动时立即建表，确保 PG schema 就绪（不依赖 pipeline 是否有数据）
+    try:
+        ensure_pg_schema()
+    except Exception:
+        logger.exception("failed to ensure PG schema on startup")
+
     scheduler = BlockingScheduler()
     scheduler.add_job(job, "interval", minutes=settings.poll_interval_minutes)
     logger.info("scheduler started, interval=%s min", settings.poll_interval_minutes)
