@@ -7,27 +7,26 @@ const $themeToggle = document.getElementById('themeToggle');
 
 function setTheme(light) {
   if (light) {
-    document.documentElement.setAttribute('data-theme', 'light');
-  } else {
     document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
   }
-  $themeToggle.textContent = light ? '☀️' : '🌙';
   localStorage.setItem('theme', light ? 'light' : 'dark');
 }
 
-// init: localStorage > system preference > dark
+// init: localStorage > system preference > light (default)
 {
   const saved = localStorage.getItem('theme');
   if (saved) {
     setTheme(saved === 'light');
   } else {
-    setTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
+    setTheme(!window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
 }
 
 $themeToggle.addEventListener('click', () => {
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  setTheme(!isLight);
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  setTheme(isDark);
 });
 
 // ── state ────────────────────────────────────────────────
@@ -588,6 +587,9 @@ window.showDetail = function(nid) {
 
   $detailPanel.classList.add('open');
 
+  // redraw chart after transition completes (main area resizes)
+  setTimeout(() => drawChart(), 380);
+
   // animate score bars
   requestAnimationFrame(() => {
     $detailBody.querySelectorAll('.d-score-fill, .d-clf-fill').forEach(el => {
@@ -607,6 +609,8 @@ $detailClose.addEventListener('click', () => {
   $detailPanel.classList.remove('open');
   activeNewsId = null;
   document.querySelectorAll('.news-item.active').forEach(el => el.classList.remove('active'));
+  // redraw chart after transition completes (main area resizes)
+  setTimeout(() => drawChart(), 380);
 });
 
 // close on Escape

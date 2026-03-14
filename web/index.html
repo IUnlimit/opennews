@@ -10,58 +10,65 @@
 </head>
 <body>
 
-<div class="shell">
-  <!-- header -->
-  <header class="hdr">
-    <div class="hdr-left">
-      <span class="hdr-logo">◆</span>
-      <span class="hdr-title">OPENNEWS</span>
-      <span class="hdr-sub">IMPACT TERMINAL</span>
-    </div>
-    <div class="hdr-right">
-      <button class="theme-toggle" id="themeToggle" title="切换日间/夜间模式">🌙</button>
-      <span class="hdr-divider">│</span>
-      <span class="hdr-stat" id="statTotal">—</span>
-      <span class="hdr-stat-label">条新闻</span>
-      <span class="hdr-divider">│</span>
-      <span class="hdr-stat" id="statTopics">—</span>
-      <span class="hdr-stat-label">个主题</span>
-      <span class="hdr-divider">│</span>
-      <span class="hdr-badge hdr-badge--high" id="statHigh">—</span>
-      <span class="hdr-badge hdr-badge--mid" id="statMid">—</span>
-      <span class="hdr-badge hdr-badge--low" id="statLow">—</span>
-    </div>
-  </header>
-
-  <!-- chart + range -->
-  <section class="chart-section">
-    <div class="chart-header">
-      <span class="chart-label">SCORE DISTRIBUTION</span>
-      <span class="chart-range-text" id="rangeText">0.0 — 100.0</span>
-    </div>
-    <canvas id="distChart" width="960" height="140"></canvas>
-    <div class="range-wrap">
-      <div class="range-track" id="rangeTrack">
-        <div class="range-fill" id="rangeFill"></div>
-        <div class="range-thumb range-thumb--lo" id="thumbLo" tabindex="0"></div>
-        <div class="range-thumb range-thumb--hi" id="thumbHi" tabindex="0"></div>
+<div class="layout" id="layout">
+  <div class="shell">
+    <!-- header -->
+    <header class="hdr">
+      <div class="hdr-left">
+        <span class="hdr-logo">◆</span>
+        <span class="hdr-title">OPENNEWS</span>
+        <span class="hdr-sub">IMPACT TERMINAL</span>
       </div>
-      <div class="range-labels">
-        <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span>
-        <span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span>
+      <div class="hdr-right">
+        <button class="theme-toggle" id="themeToggle" title="切换日间/夜间模式">
+          <svg class="theme-icon theme-icon--sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="theme-icon theme-icon--moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <span class="hdr-divider">│</span>
+        <span class="hdr-stat" id="statTotal">—</span>
+        <span class="hdr-stat-label">条新闻</span>
+        <span class="hdr-divider">│</span>
+        <span class="hdr-stat" id="statTopics">—</span>
+        <span class="hdr-stat-label">个主题</span>
+        <span class="hdr-divider">│</span>
+        <span class="hdr-badge hdr-badge--high" id="statHigh">—</span>
+        <span class="hdr-badge hdr-badge--mid" id="statMid">—</span>
+        <span class="hdr-badge hdr-badge--low" id="statLow">—</span>
       </div>
-    </div>
-  </section>
+    </header>
 
-  <!-- topic groups -->
-  <section class="topics" id="topicList">
-    <div class="topics-loading">加载中…</div>
-  </section>
+    <!-- chart + range -->
+    <section class="chart-section">
+      <div class="chart-header">
+        <span class="chart-label">SCORE DISTRIBUTION</span>
+        <span class="chart-range-text" id="rangeText">0.0 — 100.0</span>
+      </div>
+      <canvas id="distChart" width="960" height="140"></canvas>
+      <div class="range-wrap">
+        <div class="range-track" id="rangeTrack">
+          <div class="range-fill" id="rangeFill"></div>
+          <div class="range-thumb range-thumb--lo" id="thumbLo" tabindex="0"></div>
+          <div class="range-thumb range-thumb--hi" id="thumbHi" tabindex="0"></div>
+        </div>
+        <div class="range-labels">
+          <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span>
+          <span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span>
+        </div>
+      </div>
+    </section>
 
-  <!-- detail panel (overlay) -->
+    <!-- topic groups -->
+    <section class="topics" id="topicList">
+      <div class="topics-loading">加载中…</div>
+    </section>
+  </div>
+
+  <!-- detail panel (side-by-side on desktop, overlay on mobile) -->
   <aside class="detail-panel" id="detailPanel">
-    <button class="detail-close" id="detailClose">✕</button>
-    <div class="detail-body" id="detailBody"></div>
+    <div class="detail-panel-inner">
+      <button class="detail-close" id="detailClose">✕</button>
+      <div class="detail-body" id="detailBody"></div>
+    </div>
   </aside>
 </div>
 
