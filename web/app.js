@@ -120,7 +120,7 @@ const AUTO_REFRESH_INTERVAL = 30_000; // 30 秒
 
 // ── data loading ─────────────────────────────────────────
 
-async function loadData(source, { preserveState = false } = {}) {
+async function loadData(source) {
   let data;
   try {
     let url;
@@ -160,14 +160,10 @@ async function loadData(source, { preserveState = false } = {}) {
     return;
   }
 
-  if (!preserveState) {
-    rangeLo = 50;
-    rangeHi = 100;
-  }
   applyFilter();
 
   // 自动刷新时：如果详情侧边栏打开，用新数据刷新内容
-  if (preserveState && activeNewsId) {
+  if (activeNewsId) {
     const stillExists = allItems.find(d => d.news?.news_id === activeNewsId);
     if (stillExists) {
       showDetail(activeNewsId);
@@ -179,7 +175,7 @@ function startAutoRefresh() {
   stopAutoRefresh();
   autoRefreshTimer = setInterval(async () => {
     const src = document.getElementById('sourceSelect').value;
-    await loadData(src, { preserveState: true });
+    await loadData(src);
   }, AUTO_REFRESH_INTERVAL);
 }
 
@@ -713,8 +709,6 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   reader.onload = () => {
     try {
       allItems = JSON.parse(reader.result).filter(d => d.news && d.report);
-      rangeLo = 50;
-      rangeHi = 100;
       applyFilter();
     } catch (err) {
       alert('JSON 解析失败: ' + err.message);
