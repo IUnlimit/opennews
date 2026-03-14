@@ -11,8 +11,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 logger = logging.getLogger(__name__)
 
 # 完全链接层次聚类的距离阈值
-# 距离 = 1 - cosine_similarity，阈值 0.50 意味着簇内任意两篇相似度 >= 0.50
-DISTANCE_THRESHOLD = 0.55
+# 距离 = 1 - cosine_similarity，阈值 0.35 意味着簇内任意两篇相似度 >= 0.65
+DISTANCE_THRESHOLD = 0.35
 
 # 至少 2 篇才算聚合主题
 MIN_CLUSTER_SIZE = 2
@@ -50,7 +50,22 @@ class OnlineTopicModel:
         self._labels.clear()
         n = len(docs)
 
-        emb = self._get_embedder().encode(docs, show_progress_bar=False)
+        # 只有当外部传入的 embeddings 维度与本模型一致时才复用，
+        # 否则用自己的 embedder 重新编码（避免不同模型 embedding 空间混用）
+        if embeddings is not None:
+            emb_arr = np.array(embeddings) if not isinstance(embeddings, np.ndarray) else embeddings
+            expected_dim = self._get_embedder().get_sentence_embedding_dimension()
+            if emb_arr.ndim == 2 and emb_arr.shape[1] == expected_dim:
+                emb = emb_arr
+                logger.debug("reusing external embeddings (dim=%d)", expected_dim)
+            else:
+                logger.info(
+                    "external embeddings dim %s != topic model dim %d, re-encoding",
+                    emb_arr.shape[1] if emb_arr.ndim == 2 else "?", expected_dim,
+                )
+                emb = self._get_embedder().encode(docs, show_progress_bar=False)
+        else:
+            emb = self._get_embedder().encode(docs, show_progress_bar=False)
         sim = cosine_similarity(emb)
 
         # 单篇直接独立

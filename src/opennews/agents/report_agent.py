@@ -237,6 +237,24 @@ class ReportAgent:
             + s3 * self.weights["policy_risk"]
             + s4 * self.weights["spread_breadth"]
         )
+
+        # 领域相关性惩罚：分类置信度低说明不属于任何金融类别，
+        # 对最终分数施加折扣，避免非金融新闻被高估
+        clf_confidence = classification.get("confidence", 0.0)
+        domain_penalty = 1.0
+        if clf_confidence < 0.3:
+            domain_penalty = 0.5
+        elif clf_confidence < 0.4:
+            domain_penalty = 0.7
+
+        penalty_reason = ""
+        if domain_penalty < 1.0:
+            final *= domain_penalty
+            penalty_reason = (
+                f"\n  [领域惩罚] clf_confidence={clf_confidence:.2f} < 阈值, "
+                f"penalty={domain_penalty:.1f}"
+            )
+
         final = round(_clamp(final), 2)
 
         # 影响等级
@@ -247,7 +265,7 @@ class ReportAgent:
         else:
             level = "低"
 
-        reasoning = f"DK-CoT 推理链:\n  {r1}\n  {r2}\n  {r3}\n  {r4}\n  → 加权得分={final}, 等级={level}"
+        reasoning = f"DK-CoT 推理链:\n  {r1}\n  {r2}\n  {r3}\n  {r4}{penalty_reason}\n  → 加权得分={final}, 等级={level}"
 
         # 生成 Markdown 报告
         markdown = self._render_markdown(

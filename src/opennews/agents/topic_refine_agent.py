@@ -80,7 +80,12 @@ class TopicRefineAgent:
             try:
                 refined = self._call_llm_refine(titles)
             except Exception:
-                logger.exception("LLM refine failed for topic %d, keeping original", tid)
+                logger.warning(
+                    "LLM refine failed for topic %d (%d items), keeping original clustering. "
+                    "Check LLM API connectivity and config/llm.yaml settings.",
+                    tid, len(member_indices),
+                    exc_info=True,
+                )
                 continue
 
             if not refined or (len(refined) == 1 and
