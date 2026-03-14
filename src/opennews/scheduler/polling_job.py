@@ -6,6 +6,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from opennews.config import settings
 from opennews.db import ensure_schema as ensure_pg_schema
+from opennews.ingest.sources import SourcesConfig
 from opennews.workflow.langgraph_pipeline import run_once
 
 logging.basicConfig(
@@ -24,6 +25,9 @@ def job() -> None:
 
 
 def start_scheduler() -> None:
+    # 启动时确保配置文件存在（不存在则自动创建默认）
+    SourcesConfig.load(settings.sources_config_path)
+
     # 启动时立即建表，确保 PG schema 就绪（不依赖 pipeline 是否有数据）
     try:
         ensure_pg_schema()

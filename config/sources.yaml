@@ -1,0 +1,12 @@
+# ═══════════════════════════════════════════════════════════
+#  OpenNews — 新闻源配置
+#  程序启动时自动检测，不存在则创建此默认文件
+# ═══════════════════════════════════════════════════════════
+
+# 当前仅支持 newsnow 类型数据源
+# 每个 url 对应一个 NewsNow 兼容 API 端点，sources 为该端点下的频道列表
+
+newsnow:
+  - url: https://newsnow.busiyi.world/api/s/entire
+    sources:
+      - wallstreetcn-news

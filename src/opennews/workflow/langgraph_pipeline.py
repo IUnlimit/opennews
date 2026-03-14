@@ -25,6 +25,7 @@ from opennews.ingest.news_fetcher import (
     NewsItem, deduplicate_news, fetch_newsnow,
 )
 from opennews.ingest.seed_injector import RealtimeSeedInjector
+from opennews.ingest.sources import SourcesConfig
 from opennews.memory import MemoryRecord, RedisMemoryStore
 from opennews.nlp.embedder import TextEmbedder
 from opennews.nlp.entity_extractor import EntityExtractor
@@ -98,6 +99,9 @@ class PipelineRuntime:
         default_factory=lambda: CheckpointStore(settings.checkpoint_file)
     )
     seed_injector: RealtimeSeedInjector = field(default_factory=RealtimeSeedInjector)
+    sources_config: SourcesConfig = field(
+        default_factory=lambda: SourcesConfig.load(settings.sources_config_path)
+    )
 
 
 runtime = PipelineRuntime()
@@ -118,16 +122,19 @@ def init_graph_schema() -> bool:
 
 
 def fetch_news_node(state: PipelineState) -> PipelineState:
-    sources = [s.strip() for s in settings.newsnow_sources.split(",") if s.strip()]
     last_dt = runtime.checkpoint.load_last_published_at()
 
-    # 从 NewsNow API 抓取
-    news_batch = fetch_newsnow(
-        api_url=settings.newsnow_api_url,
-        sources=sources,
-        limit=settings.batch_size,
-        since=last_dt,
-    )
+    # 从所有 newsnow 端点抓取
+    news_batch: list[NewsItem] = []
+    for endpoint in runtime.sources_config.newsnow:
+        items = fetch_newsnow(
+            api_url=endpoint.url,
+            sources=endpoint.sources,
+            limit=settings.batch_size,
+            since=last_dt,
+        )
+        news_batch.extend(items)
+
     seed_batch = runtime.seed_injector.load()
 
     batch = deduplicate_news(news_batch + seed_batch)

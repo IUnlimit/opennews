@@ -43,18 +43,10 @@ class Settings:
     pg_database: str = os.getenv("PG_DATABASE", "opennews")
 
     checkpoint_file: str = os.getenv("CHECKPOINT_FILE", "seeds/checkpoint.json")
-    # NewsNow API 配置
-    newsnow_api_url: str = os.getenv(
-        "NEWSNOW_API_URL",
-        "https://newsnow.busiyi.world/api/s/entire",
-    )
-    newsnow_sources: str = os.getenv(
-        "NEWSNOW_SOURCES",
-        "wallstreetcn-news",
-    )
 
-    # LLM 配置文件路径
+    # 配置文件路径
     llm_config_path: str = os.getenv("LLM_CONFIG_PATH", "config/llm.yaml")
+    sources_config_path: str = os.getenv("SOURCES_CONFIG_PATH", "config/sources.yaml")
 
 
 settings = Settings()
