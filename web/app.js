@@ -48,6 +48,7 @@ const $rangeTrack  = document.getElementById('rangeTrack');
 const $detailPanel = document.getElementById('detailPanel');
 const $detailBody  = document.getElementById('detailBody');
 const $detailClose = document.getElementById('detailClose');
+const $chartSummary = document.getElementById('chartSummary');
 
 // stats
 const $statTotal  = document.getElementById('statTotal');
@@ -210,6 +211,11 @@ function updateStats() {
   $statHigh.textContent = `高 ${levels['高']}`;
   $statMid.textContent  = `中 ${levels['中']}`;
   $statLow.textContent  = `低 ${levels['低']}`;
+
+  // update chart summary
+  const totalCount = allItems.length;
+  const above60 = allItems.filter(d => (d.report?.final_score ?? 0) >= 60).length;
+  $chartSummary.textContent = `今天，OPENNEWS 分析了 ${totalCount} 篇新闻文章，其中 ${above60} 篇的评分超过 60 分。`;
 }
 
 // ── chart ────────────────────────────────────────────────

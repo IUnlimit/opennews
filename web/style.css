@@ -157,9 +157,8 @@ body {
   margin-bottom: 10px;
 }
 .chart-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 2px;
+  font-family: var(--font-sans);
+  font-size: 12px;
   color: var(--text-dim);
 }
 .chart-range-text {
@@ -235,9 +234,9 @@ body {
 /* ── sort bar ──────────────────────────────────────────── */
 .sort-bar {
   display: flex;
+  justify-content: center;
   gap: 8px;
-  margin-top: 14px;
-  padding: 0 36px;
+  margin-top: 24px;
 }
 .sort-btn {
   font-family: var(--font-mono);
