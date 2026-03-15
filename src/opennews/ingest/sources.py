@@ -42,7 +42,13 @@ class SourcesConfig:
     @classmethod
     def load(cls, path: str | Path | None = None) -> "SourcesConfig":
         """从 YAML 加载配置，文件不存在时自动创建默认配置。"""
-        cfg_path = Path(path) if path else _DEFAULT_CONFIG_PATH
+        if path:
+            cfg_path = Path(path)
+            # 相对路径基于项目根目录解析
+            if not cfg_path.is_absolute():
+                cfg_path = _DEFAULT_CONFIG_PATH.parent.parent / cfg_path
+        else:
+            cfg_path = _DEFAULT_CONFIG_PATH
 
         if not cfg_path.exists():
             logger.info("sources config not found, creating default at %s", cfg_path)

@@ -10,3 +10,14 @@ newsnow:
   - url: https://newsnow.busiyi.world/api/s/entire
     sources:
       - wallstreetcn-news
+      - fastbull-express
+      - gelonghui
+      - cls-telegraph
+      - cankaoxiaoxi
+      - sputniknewscn
+      - zaobao
+      - mktnews-flash
+      - hackernews
+      - solidot
+      - 36kr-quick
+      - sputniknewscn
