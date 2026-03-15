@@ -21,8 +21,13 @@ logger = logging.getLogger(__name__)
 @dataclass(slots=True)
 class RefinedGroup:
     """LLM 精炼后的一个主题子组。"""
-    label: str
+    label_zh: str
+    label_en: str
     member_indices: list[int]  # 在原始候选组中的索引
+
+    @property
+    def label_dict(self) -> dict[str, str]:
+        return {"zh": self.label_zh, "en": self.label_en}
 
 
 class TopicRefineAgent:
@@ -36,17 +41,17 @@ class TopicRefineAgent:
         self,
         docs: list[str],
         assignments: list[TopicAssignment],
-        labels: dict[int, str],
-    ) -> tuple[list[TopicAssignment], dict[int, str]]:
+        labels: dict[int, dict[str, str]],
+    ) -> tuple[list[TopicAssignment], dict[int, dict[str, str]]]:
         """对聚类结果进行 LLM 精炼。
 
         Args:
             docs: 新闻文档列表（title\\ncontent）
             assignments: 原始聚类分配
-            labels: 原始 topic_id → label 映射
+            labels: 原始 topic_id → {"zh": "...", "en": "..."} 映射
 
         Returns:
-            (refined_assignments, refined_labels) 精炼后的分配和标签
+            (refined_assignments, refined_labels) 精炼后的分配和双语标签
         """
         if not self.config.topic_refine_enabled:
             logger.info("topic refine disabled, skipping")
@@ -122,17 +127,17 @@ class TopicRefineAgent:
                 if first:
                     # 继承原 topic_id，更新 label
                     use_tid = tid
-                    new_labels[use_tid] = rg.label
+                    new_labels[use_tid] = rg.label_dict
                     first = False
                 elif len(rg.member_indices) == 1:
                     # 单条新闻 → solo
                     use_tid = next_solo_id
-                    new_labels[use_tid] = rg.label
+                    new_labels[use_tid] = rg.label_dict
                     next_solo_id -= 1
                 else:
                     # 新的聚合主题
                     use_tid = next_topic_id
-                    new_labels[use_tid] = rg.label
+                    new_labels[use_tid] = rg.label_dict
                     next_topic_id += 1
 
                 for local_idx in rg.member_indices:
@@ -166,11 +171,11 @@ class TopicRefineAgent:
                 "以下新闻被初步判定为同一主题，请重新审视并分组：\n\n{news_list}\n\n"
                 "将真正讨论同一事件/话题的新闻归为一组，不相关的拆分出去。\n\n"
                 '输出严格 JSON：\n'
-                '{{"groups": [{{"label": "概括的中文主题标签，10~20字适宜", "indices": [0, 2]}}]}}\n\n'
+                '{{"groups": [{{"label_zh": "概括的中文主题标签，10~20字适宜", "label_en": "Concise English topic label, 5-10 words", "indices": [0, 2]}}]}}\n\n'
                 "要求：\n"
                 "1. indices 为新闻序号（从 0 开始），每条新闻只能出现一次\n"
                 "2. 与组内其他新闻无关的，单独成组\n"
-                "3. label 应准确概括该组的共同话题\n"
+                "3. label_zh 应准确概括该组的共同话题（中文），label_en 为对应的英文主题标签\n"
                 "4. 只输出 JSON"
             )
 
@@ -207,17 +212,18 @@ class TopicRefineAgent:
         seen = set()
         result = []
         for g in groups_raw:
-            label = g.get("label", "未知主题")
+            label_zh = g.get("label_zh") or g.get("label", "未知主题")
+            label_en = g.get("label_en", label_zh)
             indices = g.get("indices", [])
             # 过滤无效索引和重复
             valid = [i for i in indices if isinstance(i, int) and 0 <= i < n_titles and i not in seen]
             seen.update(valid)
             if valid:
-                result.append(RefinedGroup(label=label, member_indices=valid))
+                result.append(RefinedGroup(label_zh=label_zh, label_en=label_en, member_indices=valid))
 
         # 补全遗漏的新闻（LLM 可能漏掉某些）
         missing = [i for i in range(n_titles) if i not in seen]
         for i in missing:
-            result.append(RefinedGroup(label="未分类", member_indices=[i]))
+            result.append(RefinedGroup(label_zh="未分类", label_en="Uncategorized", member_indices=[i]))
 
         return result

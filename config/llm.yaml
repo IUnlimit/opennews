@@ -36,7 +36,8 @@ topic_refine:
     {{
       "groups": [
         {{
-          "label": "概况的中文主题标签，10~20字适宜",
+          "label_zh": "概括的中文主题标签，10~20字适宜",
+          "label_en": "Concise English topic label, 5-10 words",
           "indices": [0, 2]
         }}
       ]
@@ -46,5 +47,5 @@ topic_refine:
     要求：
     1. indices 为新闻序号（从 0 开始），每条新闻只能出现一次
     2. 与组内其他新闻无关的，单独成组
-    3. label 应准确概括该组的共同话题
+    3. label_zh 应准确概括该组的共同话题（中文），label_en 为对应的英文主题标签
     4. 只输出 JSON

@@ -21,7 +21,7 @@ def build_graph_payload(
     embedding: list[float],
     entities: list[EntityMention],
     topic: TopicAssignment,
-    topic_label: str,
+    topic_label: dict[str, str],
     now_utc: datetime | None = None,
 ) -> dict:
     entity_dicts = [

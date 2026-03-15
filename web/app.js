@@ -36,6 +36,7 @@ let rangeLo = 50;
 let rangeHi = 100;
 let activeNewsId = null;
 let sortMode = 'score'; // 'score' | 'time' | 'avg'
+let topicLang = localStorage.getItem('topicLang') || 'zh'; // 'zh' | 'en'
 
 // ── DOM refs ─────────────────────────────────────────────
 const $topicList   = document.getElementById('topicList');
@@ -58,6 +59,13 @@ const $statMid    = document.getElementById('statMid');
 const $statLow    = document.getElementById('statLow');
 
 // ── helpers ──────────────────────────────────────────────
+const getTopicLabel = (topic) => {
+  const label = topic?.label;
+  if (!label) return 'outlier';
+  if (typeof label === 'string') return label;  // 兼容旧数据
+  return label[topicLang] || label.zh || label.en || 'outlier';
+};
+
 const levelClass = (level) => {
   if (level === '高') return 'high';
   if (level === '中') return 'mid';
@@ -382,7 +390,7 @@ function renderTopics() {
     if (!groups.has(tid)) {
       groups.set(tid, {
         topic_id: tid,
-        label: item.topic?.label || 'outlier',
+        label: getTopicLabel(item.topic),
         items: [],
       });
     }
@@ -726,6 +734,23 @@ document.querySelectorAll('.sort-btn').forEach(btn => {
     renderTopics();
   });
 });
+
+// ── language switch ───────────────────────────────────────
+{
+  const $langSwitch = document.getElementById('langSwitch');
+  // init active state from stored preference
+  $langSwitch.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === topicLang);
+  });
+  $langSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('.lang-btn');
+    if (!btn) return;
+    topicLang = btn.dataset.lang;
+    localStorage.setItem('topicLang', topicLang);
+    $langSwitch.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === topicLang));
+    renderTopics();
+  });
+}
 
 // ── resize ───────────────────────────────────────────────
 window.addEventListener('resize', () => { drawChart(); });

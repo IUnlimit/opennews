@@ -64,7 +64,7 @@ class Neo4jGraphClient:
                         n.final_impact_score=$final_impact_score,
                         n.impact_level=$impact_level
                     MERGE (t:Topic {topic_id: $topic_id})
-                    SET t.label=$topic_label, t.updated_at=$now
+                    SET t.label_zh=$topic_label_zh, t.label_en=$topic_label_en, t.updated_at=$now
                     MERGE (n)-[r:IN_TOPIC]->(t)
                     SET r.prob=$topic_prob, r.updated_at=$now
                     """,
@@ -77,7 +77,8 @@ class Neo4jGraphClient:
                         "published_at": news["published_at"],
                         "embedding": news["embedding"],
                         "topic_id": topic["topic_id"],
-                        "topic_label": topic["label"],
+                        "topic_label_zh": topic["label"].get("zh", "") if isinstance(topic["label"], dict) else topic["label"],
+                        "topic_label_en": topic["label"].get("en", "") if isinstance(topic["label"], dict) else topic["label"],
                         "topic_prob": topic["probability"],
                         # Step2: 分类 & 特征
                         "category": (payload.classification or {}).get("category", "unknown"),

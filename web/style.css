@@ -726,6 +726,32 @@ body {
   color: var(--text-dim);
 }
 .theme-toggle:hover { background: var(--bg-hover); color: var(--text-bright); }
+
+/* ── language switch ───────────────────────────────────── */
+.lang-switch {
+  display: flex;
+  gap: 0;
+  margin-left: 6px;
+  border: 1px solid var(--border-hi);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.lang-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 7px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  line-height: 1;
+}
+.lang-btn:not(:last-child) { border-right: 1px solid var(--border-hi); }
+.lang-btn:hover { background: var(--bg-hover); color: var(--text-bright); }
+.lang-btn.active { background: var(--bg-hover); color: var(--accent); }
+
 /* light (default): show moon → click to go dark */
 .theme-icon--moon { display: block; }
 .theme-icon--sun  { display: none; }

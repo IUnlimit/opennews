@@ -30,7 +30,7 @@ class TopicAssignment:
 class OnlineTopicModel:
     def __init__(self, embedding_model=None):
         self._embedder = None
-        self._labels: dict[int, str] = {}
+        self._labels: dict[int, dict[str, str]] = {}  # {topic_id: {"zh": "...", "en": "..."}}
 
     def _get_embedder(self):
         if self._embedder is None:
@@ -103,7 +103,8 @@ class OnlineTopicModel:
                     # 找该簇内平均相似度最高的文档作为代表标题
                     members = [j for j in range(n) if labels[j] == scipy_label]
                     best = max(members, key=lambda m: np.mean([sim[m][k] for k in members if k != m]))
-                    self._labels[cluster_id] = docs[best].split("\n")[0]
+                    title = docs[best].split("\n")[0]
+                    self._labels[cluster_id] = {"zh": title, "en": title}
                     cluster_id += 1
 
                 tid = label_map[scipy_label]
@@ -113,7 +114,7 @@ class OnlineTopicModel:
             else:
                 # 独立新闻
                 title = docs[i].split("\n")[0]
-                self._labels[solo_id] = title
+                self._labels[solo_id] = {"zh": title, "en": title}
                 assignments[i] = TopicAssignment(topic_id=solo_id, probability=0.0)
                 solo_id -= 1
 
@@ -128,9 +129,18 @@ class OnlineTopicModel:
         assignments = []
         for i, doc in enumerate(docs):
             solo_id = -(i + 1)
-            self._labels[solo_id] = doc.split("\n")[0]
+            title = doc.split("\n")[0]
+            self._labels[solo_id] = {"zh": title, "en": title}
             assignments.append(TopicAssignment(topic_id=solo_id, probability=0.0))
         return assignments
 
-    def get_topic_label(self, topic_id: int) -> str:
-        return self._labels.get(topic_id, f"topic_{topic_id}")
+    def get_topic_label(self, topic_id: int) -> dict[str, str]:
+        """返回 {"zh": "...", "en": "..."} 双语标签。"""
+        fallback = f"topic_{topic_id}"
+        label = self._labels.get(topic_id)
+        if label is None:
+            return {"zh": fallback, "en": fallback}
+        # 兼容旧的 str 格式
+        if isinstance(label, str):
+            return {"zh": label, "en": label}
+        return label
