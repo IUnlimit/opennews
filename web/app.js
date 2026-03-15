@@ -383,18 +383,20 @@ function renderTopics() {
     openTopics.add(el.dataset.tid);
   });
 
-  // group by topic_id
+  // group by batch_id:topic_id (topic_id alone is not unique across batches)
   const groups = new Map();
   filteredItems.forEach(item => {
     const tid = item.topic?.topic_id ?? -1;
-    if (!groups.has(tid)) {
-      groups.set(tid, {
-        topic_id: tid,
+    const bid = item.topic?.batch_id ?? 0;
+    const groupKey = `${bid}:${tid}`;
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, {
+        topic_id: groupKey,
         label: getTopicLabel(item.topic),
         items: [],
       });
     }
-    groups.get(tid).items.push(item);
+    groups.get(groupKey).items.push(item);
   });
 
   // sort groups based on sortMode
@@ -454,8 +456,8 @@ function renderTopics() {
     const timeAgo = latestTime ? fmtTimeAgo(latestTime.toISOString()) : '';
 
     return `
-      <div class="topic-card${isOpen ? ' open' : ''}" data-tid="${g.topic_id}">
-        <div class="topic-head" onclick="toggleTopic(${g.topic_id})">
+      <div class="topic-card${isOpen ? ' open' : ''}" data-tid="${escAttr(g.topic_id)}">
+        <div class="topic-head" onclick="toggleTopic('${escAttr(g.topic_id)}')">
           <span class="topic-arrow">▶</span>
           <span class="topic-avg-score" style="color:${scoreColor(parseFloat(avgScore))}">${avgScore}</span>
           <span class="topic-label">${escHtml(g.label)}<span class="topic-src-info">（${escHtml(srcText)}）</span></span>

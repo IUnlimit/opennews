@@ -195,7 +195,13 @@ def get_batch_records(batch_id: int) -> list[dict]:
                 "SELECT payload FROM batch_records WHERE batch_id = %s ORDER BY id",
                 (batch_id,),
             )
-            return [row[0] for row in cur.fetchall()]
+            records = [row[0] for row in cur.fetchall()]
+    # 注入 batch_id 到 topic 中，使 topic_id 跨批次唯一
+    for rec in records:
+        topic = rec.get("topic")
+        if topic and "batch_id" not in topic:
+            topic["batch_id"] = batch_id
+    return records
 
 
 def get_latest_batch_records() -> list[dict]:
@@ -223,11 +229,19 @@ def get_records_since(hours: float) -> list[dict]:
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT DISTINCT ON (COALESCE(br.news_url, br.id::text)) br.payload "
+                "SELECT DISTINCT ON (COALESCE(br.news_url, br.id::text)) "
+                "br.batch_id, br.payload "
                 "FROM batch_records br "
                 "JOIN batches b ON br.batch_id = b.batch_id "
                 "WHERE b.created_at >= now() - interval '%s hours' "
                 "ORDER BY COALESCE(br.news_url, br.id::text), br.id DESC",
                 (hours,),
             )
-            return [row[0] for row in cur.fetchall()]
+            records = []
+            for row in cur.fetchall():
+                bid, payload = row[0], row[1]
+                topic = payload.get("topic")
+                if topic and "batch_id" not in topic:
+                    topic["batch_id"] = bid
+                records.append(payload)
+            return records
