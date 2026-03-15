@@ -159,7 +159,115 @@ class TopicRefineAgent:
         clustered = sum(1 for a in new_assignments if a.topic_id >= 0)
         logger.info("after LLM refine: %d clustered, %d solo",
                      clustered, len(new_assignments) - clustered)
+
+        # ── 批量翻译未生成双语标签的主题 ──────────────
+        # 聚类阶段和 LLM 失败时 label 的 zh/en 相同（都是原标题），需要补翻译
+        new_labels = self._translate_missing_labels(new_labels)
+
         return new_assignments, new_labels
+
+    # ── 批量翻译 ──────────────────────────────────────────
+
+    _TRANSLATE_BATCH_SIZE = 40  # 单次翻译请求的最大条目数
+
+    def _translate_missing_labels(
+        self, labels: dict[int, dict[str, str]],
+    ) -> dict[int, dict[str, str]]:
+        """对 zh == en 的 label 批量调用 LLM 生成缺失的另一语言标签。"""
+        if not self.config.api_key:
+            return labels
+
+        # 收集需要翻译的 topic_id 和对应标题
+        to_translate: list[tuple[int, str]] = []
+        for tid, lbl in labels.items():
+            if lbl.get("zh") == lbl.get("en") and lbl.get("zh"):
+                to_translate.append((tid, lbl["zh"]))
+
+        if not to_translate:
+            return labels
+
+        logger.info("translating %d topic labels to bilingual", len(to_translate))
+        result = dict(labels)
+
+        for batch_start in range(0, len(to_translate), self._TRANSLATE_BATCH_SIZE):
+            batch = to_translate[batch_start:batch_start + self._TRANSLATE_BATCH_SIZE]
+            translated = self._call_translate_batch(batch)
+            if translated:
+                for (tid, _orig), pair in zip(batch, translated):
+                    if pair is not None:
+                        result[tid] = {"zh": pair[0], "en": pair[1]}
+
+        return result
+
+    def _call_translate_batch(
+        self, items: list[tuple[int, str]],
+    ) -> list[tuple[str, str]] | None:
+        """批量翻译标题，返回 [(zh, en), ...] 或 None。"""
+        numbered = "\n".join(f"[{i}] {title}" for i, (_, title) in enumerate(items))
+
+        system = (
+            "你是一个多语言新闻标题翻译专家。"
+            "你需要为每条新闻标题同时提供简洁的中文主题标签和英文主题标签。"
+            "如果原标题是中文，生成对应的英文标签；如果原标题是英文，生成对应的中文标签。"
+            "标签应概括新闻核心内容，10~20字（中文）或 5~10 words（英文）。"
+        )
+        user = (
+            f"为以下新闻标题生成双语主题标签：\n\n{numbered}\n\n"
+            '输出严格 JSON 数组：\n'
+            '[{"zh": "中文标签", "en": "English label"}]\n\n'
+            "要求：\n"
+            "1. 数组长度与输入条目数一致，顺序对应\n"
+            "2. 只输出 JSON 数组"
+        )
+
+        try:
+            raw = self._client.chat(system, user)
+        except Exception as e:
+            logger.warning("translate batch failed: %s", e)
+            return None
+
+        return self._parse_translate_response(raw, len(items))
+
+    @staticmethod
+    def _parse_translate_response(raw: str, expected: int) -> list[tuple[str, str]] | None:
+        """解析翻译 LLM 返回的 JSON 数组。"""
+        json_match = re.search(r"```(?:json)?\s*(.*?)```", raw, re.DOTALL)
+        text = json_match.group(1).strip() if json_match else raw.strip()
+
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            bracket_match = re.search(r"\[.*\]", text, re.DOTALL)
+            if bracket_match:
+                try:
+                    data = json.loads(bracket_match.group())
+                except json.JSONDecodeError:
+                    logger.warning("failed to parse translate response: %s", text[:200])
+                    return None
+            else:
+                logger.warning("no JSON array in translate response: %s", text[:200])
+                return None
+
+        if not isinstance(data, list):
+            return None
+
+        result = []
+        for item in data[:expected]:
+            if isinstance(item, dict):
+                zh = item.get("zh", "")
+                en = item.get("en", "")
+                if zh and en:
+                    result.append((zh, en))
+                else:
+                    result.append(None)
+            else:
+                result.append(None)
+
+        # 补齐不足的部分
+        while len(result) < expected:
+            result.append(None)
+
+        return result
 
     def _call_llm_with_retry(self, tid: int, titles: list[str]) -> list[RefinedGroup] | None:
         """带重试的 LLM 精炼调用，失败返回 None。"""
