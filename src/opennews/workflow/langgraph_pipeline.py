@@ -16,7 +16,13 @@ from opennews.agents.feature_agent import FeatureAgent, FeatureVector
 from opennews.agents.memory_agent import MemoryAgent, TopicTrend
 from opennews.agents.report_agent import NewsReport, ReportAgent
 from opennews.config import settings
-from opennews.db import ensure_schema as ensure_pg_schema, insert_batch, insert_reports
+from opennews.db import (
+    ensure_schema as ensure_pg_schema,
+    get_untranslated_topic_labels,
+    insert_batch,
+    insert_reports,
+    update_topic_labels,
+)
 from opennews.graph.neo4j_client import GraphPayload, Neo4jGraphClient
 from opennews.graph.subgraph_query import GraphRAGQuerier
 from opennews.graph.upsert import build_graph_payload
@@ -126,6 +132,34 @@ def init_graph_schema() -> bool:
         return False
     except Neo4jError:
         return False
+
+
+def retry_labels_node(state: PipelineState) -> PipelineState:
+    """重试之前本地化失败的主题标签（带 [EN]/[ZH] 前缀）。"""
+    try:
+        failed = get_untranslated_topic_labels(limit=100)
+    except Exception:
+        logger.exception("failed to query untranslated labels")
+        return {}
+
+    if not failed:
+        return {}
+
+    logger.info("found %d untranslated topic labels, retrying translation", len(failed))
+    rt = _get_runtime()
+    try:
+        updates = rt.topic_refine_agent.retry_failed_labels(failed)
+    except Exception:
+        logger.exception("retry_failed_labels failed")
+        return {}
+
+    if updates:
+        try:
+            update_topic_labels(updates)
+        except Exception:
+            logger.exception("failed to update topic labels in DB")
+
+    return {}
 
 
 def fetch_news_node(state: PipelineState) -> PipelineState:
@@ -473,6 +507,8 @@ def report_node(state: PipelineState) -> PipelineState:
 
 def build_pipeline():
     g = StateGraph(PipelineState)
+    # 重试之前失败的主题标签翻译
+    g.add_node("retry_labels", retry_labels_node)
     g.add_node("fetch_news", fetch_news_node)
     g.add_node("embed", embed_node)
     g.add_node("extract_entities", entity_node)
@@ -490,7 +526,8 @@ def build_pipeline():
     g.add_node("report", report_node)
     g.add_node("write_graph", write_graph_node)
 
-    g.set_entry_point("fetch_news")
+    g.set_entry_point("retry_labels")
+    g.add_edge("retry_labels", "fetch_news")
     g.add_edge("fetch_news", "embed")
     g.add_edge("embed", "extract_entities")
     # 并行分支：entities → topics / classify / features

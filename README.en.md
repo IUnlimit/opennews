@@ -19,18 +19,18 @@ OpenNews is a LangGraph-orchestrated pipeline that ingests multi-platform financ
 ### Pipeline DAG
 
 ```
-fetch_news → embed → extract_entities ─┬→ topics ──────────┐
-                                       ├→ classify ────────┤
-                                       └→ extract_features ┘
-                                               ↓
-                                         build_payload → dump_output
-                                               ↓
-                                         memory_ingest → update_trends
-                                               ↓
-                                            report → write_graph → END
+retry_labels → fetch_news → embed → extract_entities ─┬→ topics ──────────┐
+                                                      ├→ classify ────────┤
+                                                      └→ extract_features ┘
+                                                              ↓
+                                                        build_payload → dump_output
+                                                              ↓
+                                                        memory_ingest → update_trends
+                                                              ↓
+                                                           report → write_graph → END
 ```
 
-After `extract_entities`, three branches run in parallel (BERTopic clustering / DeBERTa zero-shot classification / 7-dim feature extraction), then converge into temporal memory aggregation, DK-CoT impact scoring, and graph persistence.
+After `extract_entities`, three branches run in parallel (BERTopic clustering / DeBERTa zero-shot classification / 7-dim feature extraction), then converge into temporal memory aggregation, DK-CoT impact scoring, and graph persistence. At the start of each round, `retry_labels` re-translates any topic labels that previously failed localization (marked with `[EN]`/`[ZH]` prefixes).
 
 ### Key Features
 
@@ -40,7 +40,7 @@ After `extract_entities`, three branches run in parallel (BERTopic clustering / 
 - 7-dimension news-value scoring (market impact, price signal, regulatory risk, timeliness, impact, controversy, generalizability)
 - Redis-backed 30-day rolling temporal memory with daily sentiment aggregation
 - DK-CoT 4-dimension impact scoring: stock relevance (40%), market sentiment (20%), policy risk (20%), spread breadth (20%)
-- LLM-powered topic refinement with bilingual (zh/en) labels
+- LLM-powered topic refinement with bilingual (zh/en) labels and automatic retry for failed translations
 - Neo4j knowledge graph (News / Entity / Topic nodes + MENTIONS / IN_TOPIC / IMPACTS relations)
 - PostgreSQL batch persistence with URL-based deduplication
 - Real-time web dashboard with score distribution chart, dual-range slider, and detail panel

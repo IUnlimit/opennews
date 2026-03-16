@@ -245,3 +245,50 @@ def get_records_since(hours: float) -> list[dict]:
                     topic["batch_id"] = bid
                 records.append(payload)
             return records
+
+
+# ── 未翻译标签重试 ─────────────────────────────────────
+
+def get_untranslated_topic_labels(limit: int = 100) -> list[tuple[int, dict]]:
+    """查询带 [EN]/[ZH] 前缀的未翻译主题标签。
+
+    Returns:
+        [(record_id, {"zh": "...", "en": "..."}), ...]
+    """
+    sql = """
+        SELECT id, payload->'topic'->'label' AS label
+        FROM batch_records
+        WHERE (payload->'topic'->'label'->>'zh') LIKE '[EN] %%'
+           OR (payload->'topic'->'label'->>'en') LIKE '[ZH] %%'
+        LIMIT %s
+    """
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (limit,))
+            return [(row[0], row[1]) for row in cur.fetchall()]
+
+
+def update_topic_labels(updates: list[tuple[int, dict]]) -> int:
+    """批量更新 batch_records 中的主题标签。
+
+    Args:
+        updates: [(record_id, {"zh": "...", "en": "..."}), ...]
+
+    Returns:
+        实际更新的行数
+    """
+    if not updates:
+        return 0
+    updated = 0
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            for record_id, new_label in updates:
+                cur.execute(
+                    "UPDATE batch_records "
+                    "SET payload = jsonb_set(payload, '{topic,label}', %s::jsonb) "
+                    "WHERE id = %s",
+                    (json.dumps(new_label, ensure_ascii=False), record_id),
+                )
+                updated += cur.rowcount
+    logger.info("updated %d/%d topic labels in DB", updated, len(updates))
+    return updated

@@ -169,6 +169,54 @@ class TopicRefineAgent:
 
         return new_assignments, new_labels
 
+    # ── 重试未翻译标签 ────────────────────────────────────
+
+    def retry_failed_labels(
+        self, failed: list[tuple[int, dict[str, str]]],
+    ) -> list[tuple[int, dict[str, str]]]:
+        """对带 [EN]/[ZH] 前缀的标签重新调用 LLM 翻译。
+
+        Args:
+            failed: [(record_id, {"zh": "...", "en": "..."}), ...]
+
+        Returns:
+            成功翻译的 [(record_id, {"zh": "...", "en": "..."}), ...]
+        """
+        if not self.config.api_key or not failed:
+            return []
+
+        # 还原原始文本：去掉 [EN]/[ZH] 前缀，使 zh==en 以触发翻译逻辑
+        restore_map: dict[int, tuple[int, str]] = {}  # fake_tid → (record_id, original_text)
+        labels: dict[int, dict[str, str]] = {}
+        for i, (record_id, lbl) in enumerate(failed):
+            zh, en = lbl.get("zh", ""), lbl.get("en", "")
+            if zh.startswith("[EN] "):
+                original = en  # en 是原始英文
+            elif en.startswith("[ZH] "):
+                original = zh  # zh 是原始中文
+            else:
+                continue
+            fake_tid = -(10000 + i)
+            restore_map[fake_tid] = (record_id, original)
+            labels[fake_tid] = {"zh": original, "en": original}
+
+        if not labels:
+            return []
+
+        logger.info("retrying translation for %d failed topic labels", len(labels))
+        translated = self._translate_missing_labels(labels)
+
+        results: list[tuple[int, dict[str, str]]] = []
+        for fake_tid, new_lbl in translated.items():
+            zh, en = new_lbl.get("zh", ""), new_lbl.get("en", "")
+            # 只保留真正翻译成功的（zh != en 且无前缀）
+            if zh and en and zh != en and not zh.startswith("[EN]") and not en.startswith("[ZH]"):
+                record_id, _ = restore_map[fake_tid]
+                results.append((record_id, new_lbl))
+
+        logger.info("successfully re-translated %d/%d labels", len(results), len(labels))
+        return results
+
     # ── 本地规则兜底 ──────────────────────────────────────
 
     @staticmethod
