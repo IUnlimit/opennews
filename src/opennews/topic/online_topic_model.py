@@ -27,6 +27,20 @@ _SPLIT_STEP = 0.05
 _CHINESE_EMBED_MODEL = "BAAI/bge-base-zh-v1.5"
 
 
+def _make_bilingual_label(title: str) -> dict[str, str]:
+    """根据标题语种生成初始双语 label。
+
+    中文标题 → zh=标题, en="[ZH] 标题"
+    英文标题 → zh="[EN] 标题", en=标题
+    """
+    cjk = sum(1 for c in title if '\u4e00' <= c <= '\u9fff')
+    is_zh = cjk / max(len(title.replace(" ", "")), 1) > 0.3
+    if is_zh:
+        return {"zh": title, "en": f"[ZH] {title}"}
+    else:
+        return {"zh": f"[EN] {title}", "en": title}
+
+
 @dataclass(slots=True)
 class TopicAssignment:
     topic_id: int
@@ -124,7 +138,7 @@ class OnlineTopicModel:
                 # 拆分后不足 2 篇的降为 solo
                 for j in members:
                     title = docs[j].split("\n")[0]
-                    self._labels[solo_id] = {"zh": title, "en": title}
+                    self._labels[solo_id] = _make_bilingual_label(title)
                     assignments[j] = TopicAssignment(topic_id=solo_id, probability=0.0)
                     assigned.add(j)
                     solo_id -= 1
@@ -132,7 +146,7 @@ class OnlineTopicModel:
 
             best = max(members, key=lambda m: np.mean([sim[m][k] for k in members if k != m]))
             title = docs[best].split("\n")[0]
-            self._labels[cluster_id] = {"zh": title, "en": title}
+            self._labels[cluster_id] = _make_bilingual_label(title)
 
             for j in members:
                 avg_sim = float(np.mean([sim[j][k] for k in members if k != j]))
@@ -145,7 +159,7 @@ class OnlineTopicModel:
         for i in range(n):
             if i not in assigned:
                 title = docs[i].split("\n")[0]
-                self._labels[solo_id] = {"zh": title, "en": title}
+                self._labels[solo_id] = _make_bilingual_label(title)
                 assignments[i] = TopicAssignment(topic_id=solo_id, probability=0.0)
                 solo_id -= 1
 
@@ -219,7 +233,7 @@ class OnlineTopicModel:
         for i, doc in enumerate(docs):
             solo_id = -(i + 1)
             title = doc.split("\n")[0]
-            self._labels[solo_id] = {"zh": title, "en": title}
+            self._labels[solo_id] = _make_bilingual_label(title)
             assignments.append(TopicAssignment(topic_id=solo_id, probability=0.0))
         return assignments
 

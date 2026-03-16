@@ -164,7 +164,41 @@ class TopicRefineAgent:
         # 聚类阶段和 LLM 失败时 label 的 zh/en 相同（都是原标题），需要补翻译
         new_labels = self._translate_missing_labels(new_labels)
 
+        # ── 兜底：LLM 翻译也失败时，用规则区分中英文 ──────
+        new_labels = self._fallback_bilingual(new_labels)
+
         return new_assignments, new_labels
+
+    # ── 本地规则兜底 ──────────────────────────────────────
+
+    @staticmethod
+    def _is_mostly_chinese(text: str) -> bool:
+        """判断文本是否以中文字符为主。"""
+        if not text:
+            return False
+        cjk = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
+        return cjk / max(len(text.replace(" ", "")), 1) > 0.3
+
+    @staticmethod
+    def _fallback_bilingual(
+        labels: dict[int, dict[str, str]],
+    ) -> dict[int, dict[str, str]]:
+        """LLM 翻译全部失败时的本地兜底：根据文本语种将另一语言设为带标记的占位。
+
+        如果原标题是中文，en 设为 "[ZH] 原标题"；
+        如果原标题是英文，zh 设为 "[EN] 原标题"。
+        这样前端至少能区分哪个是原始语言、哪个是占位。
+        """
+        result = dict(labels)
+        for tid, lbl in result.items():
+            zh, en = lbl.get("zh", ""), lbl.get("en", "")
+            if zh != en or not zh:
+                continue  # 已经不同，跳过
+            if TopicRefineAgent._is_mostly_chinese(zh):
+                result[tid] = {"zh": zh, "en": f"[ZH] {zh}"}
+            else:
+                result[tid] = {"zh": f"[EN] {en}", "en": en}
+        return result
 
     # ── 批量翻译 ──────────────────────────────────────────
 
