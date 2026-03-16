@@ -3,20 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenNews — 金融新闻影响评估</title>
+<title>OpenNews — 实时金融新闻影响评估面板 | Financial News Impact Dashboard</title>
+<meta name="description" content="OpenNews 实时金融新闻知识图谱与影响评估系统。基于 DK-CoT 多维度评分，提供新闻分类、主题聚类、影响力排名和趋势分析。">
+<meta name="keywords" content="OpenNews, 金融新闻, 影响评估, 知识图谱, NLP, DK-CoT, FinBERT, 新闻分析, financial news, impact assessment, knowledge graph">
+<meta name="author" content="OpenNews">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OpenNews — 实时金融新闻影响评估面板">
+<meta property="og:description" content="基于 LangGraph + FinBERT + DK-CoT 的金融新闻实时分析系统，提供多维度影响评分、主题聚类和知识图谱可视化。">
+<meta property="og:site_name" content="OpenNews">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenNews — Financial News Impact Dashboard">
+<meta name="twitter:description" content="Real-time financial news analysis with DK-CoT impact scoring, topic clustering, and knowledge graph visualization.">
+<meta name="theme-color" content="#2563eb">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "OpenNews",
+  "description": "Real-time financial news knowledge graph and impact assessment system",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 </head>
 <body>
 
 <div class="layout" id="layout">
   <div class="shell">
     <!-- header -->
-    <header class="hdr">
+    <header class="hdr" role="banner">
       <div class="hdr-left">
-        <span class="hdr-logo">◆</span>
-        <span class="hdr-title">OPENNEWS</span>
+        <span class="hdr-logo" aria-hidden="true">◆</span>
+        <h1 class="hdr-title">OPENNEWS</h1>
         <span class="hdr-sub">IMPACT TERMINAL</span>
       </div>
       <div class="hdr-right">
@@ -42,12 +66,12 @@
     </header>
 
     <!-- chart + range -->
-    <section class="chart-section">
+    <section class="chart-section" aria-label="评分分布图与筛选">
       <div class="chart-header">
         <span class="chart-label" id="chartSummary">今天，OPENNEWS 分析了 — 篇新闻文章，其中 — 篇的评分超过 60 分。</span>
-        <span class="chart-range-text" id="rangeText">50.0 — 100.0</span>
+        <span class="chart-range-text" id="rangeText" aria-live="polite">50.0 — 100.0</span>
       </div>
-      <canvas id="distChart" width="960" height="140"></canvas>
+      <canvas id="distChart" width="960" height="140" role="img" aria-label="新闻影响评分分布图：横轴为 0-100 分，纵轴为新闻数量"></canvas>
       <div class="range-wrap">
         <div class="range-track" id="rangeTrack">
           <div class="range-fill" id="rangeFill"></div>
@@ -78,13 +102,13 @@
     </section>
 
     <!-- topic groups -->
-    <section class="topics" id="topicList">
+    <section class="topics" id="topicList" aria-label="新闻主题列表">
       <div class="topics-loading">加载中…</div>
     </section>
   </div>
 
   <!-- detail panel (side-by-side on desktop, overlay on mobile) -->
-  <aside class="detail-panel" id="detailPanel">
+  <aside class="detail-panel" id="detailPanel" aria-label="新闻详情面板" role="complementary">
     <div class="detail-panel-inner">
       <button class="detail-close" id="detailClose">✕</button>
       <div class="detail-body" id="detailBody"></div>
@@ -107,6 +131,10 @@
   <input type="file" id="fileInput" accept=".json" style="display:none">
   <button class="source-btn" id="fileBtn">导入 JSON</button>
 </div>
+
+<noscript>
+  <p>OpenNews 实时金融新闻影响评估面板需要 JavaScript 支持。请启用 JavaScript 后刷新页面。</p>
+</noscript>
 
 <script src="app.js"></script>
 </body>

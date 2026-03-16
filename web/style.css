@@ -115,6 +115,7 @@ body {
   font-size: 15px;
   letter-spacing: 2px;
   color: var(--text-bright);
+  margin: 0;
 }
 .hdr-sub {
   font-family: var(--font-mono);
