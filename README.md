@@ -60,12 +60,31 @@ Only the web dashboard port (default `8080`) is exposed to the host. All infrast
 
 ### Quick Start with Docker
 
+The backend container loads NLP models from the host's HuggingFace cache (`~/.cache/huggingface`) in offline mode. Download models on the host first if you haven't already:
+
 ```bash
-# Start everything (infra + backend + web dashboard)
+# Download models on the host (one-time, ~1.5 GB)
+pip install sentence-transformers transformers
+python -c "
+from sentence_transformers import SentenceTransformer
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+SentenceTransformer('ProsusAI/finbert')
+pipeline('ner', model='dslim/bert-base-NER')
+AutoTokenizer.from_pretrained('MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')
+AutoModelForSequenceClassification.from_pretrained('MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')
+"
+
+# Start everything
 docker compose -f docker/docker-compose.yml up -d
 
 # Verify
 docker compose -f docker/docker-compose.yml ps
+```
+
+If your HuggingFace cache is in a non-default location, set `HF_HOME`:
+
+```bash
+HF_HOME=/path/to/your/cache docker compose -f docker/docker-compose.yml up -d
 ```
 
 This brings up PostgreSQL, Neo4j, Redis, the backend pipeline, and the web dashboard. All data is persisted to local directories under `docker/` (postgres, neo4j, redis). The `seeds/` and `config/` directories are mounted into the backend container, so you can edit news sources and seed files on the host and they take effect immediately.
@@ -370,12 +389,31 @@ OpenNews 是一个基于 LangGraph 编排的金融新闻处理流水线。自动
 
 ### Docker 快速启动
 
+后端容器以离线模式从宿主机的 HuggingFace 缓存（`~/.cache/huggingface`）加载 NLP 模型。首次使用前需在宿主机上下载模型：
+
 ```bash
-# 启动全部服务（基础设施 + 后端流水线 + Web 面板）
+# 在宿主机上下载模型（一次性，约 1.5 GB）
+pip install sentence-transformers transformers
+python -c "
+from sentence_transformers import SentenceTransformer
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+SentenceTransformer('ProsusAI/finbert')
+pipeline('ner', model='dslim/bert-base-NER')
+AutoTokenizer.from_pretrained('MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')
+AutoModelForSequenceClassification.from_pretrained('MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')
+"
+
+# 启动全部服务
 docker compose -f docker/docker-compose.yml up -d
 
 # 查看状态
 docker compose -f docker/docker-compose.yml ps
+```
+
+如果 HuggingFace 缓存在非默认路径，通过 `HF_HOME` 指定：
+
+```bash
+HF_HOME=/path/to/your/cache docker compose -f docker/docker-compose.yml up -d
 ```
 
 所有数据持久化到 `docker/` 下的本地目录（postgres、neo4j、redis）。`seeds/` 和 `config/` 目录挂载到后端容器中，在宿主机上编辑即可生效。

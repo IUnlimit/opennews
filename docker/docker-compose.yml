@@ -112,9 +112,12 @@ services:
       SOURCES_CONFIG_PATH: /app/config/sources.yaml
       LLM_CONFIG_PATH: /app/config/llm.yaml
       CHECKPOINT_FILE: /app/seeds/checkpoint.json
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
     volumes:
       - ../seeds:/app/seeds
       - ../config:/app/config
+      - ${HF_HOME:-~/.cache/huggingface}:/root/.cache/huggingface:ro
     deploy:
       resources:
         limits:
