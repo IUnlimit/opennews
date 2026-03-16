@@ -108,12 +108,18 @@ services:
       REPORT_ENABLED: ${REPORT_ENABLED:-true}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_BASE_URL: ${LLM_BASE_URL:-}
-      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      LLM_MODEL: ${LLM_MODEL:-}
       SOURCES_CONFIG_PATH: /app/config/sources.yaml
       LLM_CONFIG_PATH: /app/config/llm.yaml
       CHECKPOINT_FILE: /app/seeds/checkpoint.json
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
+      # 代理配置：容器通过宿主机网关访问外部 LLM API
+      HTTP_PROXY: ${CONTAINER_HTTP_PROXY:-http://host.docker.internal:7890}
+      HTTPS_PROXY: ${CONTAINER_HTTPS_PROXY:-http://host.docker.internal:7890}
+      NO_PROXY: postgres,neo4j,redis,localhost,127.0.0.1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ../seeds:/app/seeds
       - ../config:/app/config

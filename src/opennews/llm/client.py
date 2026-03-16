@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -75,21 +76,42 @@ class LLMClient:
             kwargs = {"api_key": self.config.api_key, "timeout": self.config.timeout}
             if self.config.base_url:
                 kwargs["base_url"] = self.config.base_url
+            # 禁用 SDK 内部重试，由 chat() 方法统一管理重试逻辑
+            kwargs["max_retries"] = 0
+            # 覆盖 SDK 默认的 User-Agent（OpenAI/Python x.x.x），
+            # 避免被 Cloudflare bot 检测拦截（error 1010 / 403）
+            kwargs["default_headers"] = {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+            }
             self._client = OpenAI(**kwargs)
             logger.info("initialized LLM client: model=%s, base_url=%s",
                         self.config.model, self.config.base_url or "default")
         return self._client
 
     def chat(self, system: str, user: str, **kwargs) -> str:
-        """发送一次 chat completion 请求，返回 assistant 回复文本。"""
+        """发送一次 chat completion 请求，返回 assistant 回复文本。
+        遇到 5xx / 429 错误时自动重试（指数退避，最多 3 次）。"""
         client = self._get_client()
-        resp = client.chat.completions.create(
-            model=self.config.model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            temperature=kwargs.get("temperature", self.config.temperature),
-            max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
-        )
-        return resp.choices[0].message.content.strip()
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                resp = client.chat.completions.create(
+                    model=self.config.model,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                    temperature=kwargs.get("temperature", self.config.temperature),
+                    max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
+                )
+                return resp.choices[0].message.content.strip()
+            except Exception as e:
+                err_str = str(e)
+                is_retryable = any(code in err_str for code in ("502", "503", "429"))
+                if is_retryable and attempt < max_retries - 1:
+                    wait = 3 * (2 ** attempt)  # 3s, 6s, 12s
+                    logger.warning("LLM request failed (attempt %d/%d), retrying in %ds: %s",
+                                   attempt + 1, max_retries, wait, err_str[:120])
+                    time.sleep(wait)
+                    continue
+                raise
