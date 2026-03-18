@@ -38,7 +38,7 @@ After `extract_entities`, three branches run in parallel (BERTopic clustering / 
 
 ### Key Features
 
-- Multi-source ingestion — NewsNow API, RSS, JSONL seed files
+- Multi-source ingestion — NewsNow API, JSONL seed files
 - FinBERT embeddings (768-dim) + hierarchical cosine-threshold clustering
 - DeBERTa-v3 zero-shot classification (financial / policy / company / macro / industry)
 - 7-dimension news-value scoring (market impact, price signal, regulatory risk, timeliness, impact, controversy, generalizability)
