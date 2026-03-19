@@ -20,7 +20,7 @@ REDIS_HOST="${REDIS_HOST:-127.0.0.1}"
 REDIS_PORT="${REDIS_PORT:-6379}"
 PG_HOST="${PG_HOST:-127.0.0.1}"
 PG_PORT="${PG_PORT:-5432}"
-WEB_PORT="${WEB_PORT:-8080}"
+WEB_PORT="${WEB_PORT:-8081}"
 
 # 项目根目录 = 脚本所在目录
 ROOT="$(cd "$(dirname "$0")" && pwd)"
