@@ -102,8 +102,13 @@ body {
 .hdr-left { display: flex; align-items: center; gap: 10px; }
 .hdr-logo {
   color: var(--accent);
-  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   animation: pulse 2.5s ease-in-out infinite;
+}
+.hdr-logo-icon {
+  display: block;
 }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
@@ -172,6 +177,11 @@ body {
   font-size: 12px;
   color: var(--accent);
   font-weight: 500;
+}
+.chart-refresh-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
 }
 #distChart {
   width: 100%;

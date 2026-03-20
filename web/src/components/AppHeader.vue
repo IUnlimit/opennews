@@ -1,7 +1,15 @@
 <template>
   <header class="hdr" role="banner">
     <div class="hdr-left">
-      <span class="hdr-logo" aria-hidden="true">◆</span>
+      <span class="hdr-logo" aria-hidden="true">
+        <svg class="hdr-logo-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M7 8H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M7 12H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M7 16H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="17" cy="16" r="1.4" fill="currentColor"/>
+        </svg>
+      </span>
       <h1 class="hdr-title">OPENNEWS</h1>
       <span class="hdr-sub">IMPACT TERMINAL</span>
     </div>
