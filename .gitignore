@@ -6,6 +6,7 @@ docker/postgres/
 docker/neo4j/
 docker/redis/
 seeds/
+.venv/
 
 # frontend
 node_modules/
