@@ -234,7 +234,7 @@ def get_records_since(
     """获取最近 N 小时内的记录（按 news_url 去重，保留最新），按主题分页。
 
     分页基于筛选（score_lo/score_hi）后的主题；
-    全局统计（total_items / above60 / score_bins / levels）始终基于全量数据。
+    全局统计（total_items / above75 / score_bins / levels）始终基于全量数据。
 
     Returns:
         {"items": [...], "page": int, "total_pages": int, ...}
@@ -262,7 +262,7 @@ def get_records_since(
 
     # ── 全局统计（不受筛选 & 分页影响） ──────────────────
     total_items = len(all_records)
-    above60 = sum(1 for r in all_records if (r.get("report") or {}).get("final_score", 0) >= 60)
+    above75 = sum(1 for r in all_records if (r.get("report") or {}).get("final_score", 0) >= 75)
     score_bins = [0] * 100
     levels: dict[str, int] = {"高": 0, "中": 0, "低": 0}
     for r in all_records:
@@ -313,7 +313,7 @@ def get_records_since(
         "total_pages": total_pages,
         "total_topics": total_topics,
         "total_items": total_items,
-        "above60": above60,
+        "above75": above75,
         "score_bins": score_bins,
         "levels": levels,
     }

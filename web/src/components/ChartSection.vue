@@ -3,6 +3,7 @@
     <div class="chart-header">
       <span class="chart-label">{{ summaryText }}</span>
       <span class="chart-range-text" aria-live="polite">{{ rangeLo.toFixed(1) }} — {{ rangeHi.toFixed(1) }}</span>
+      <span class="chart-refresh-text" aria-live="polite">{{ refreshText }}</span>
     </div>
     <canvas ref="canvasRef" id="distChart" width="960" height="140" role="img" aria-label="新闻影响评分分布图：横轴为 0-100 分，纵轴为新闻数量"></canvas>
     <div class="range-wrap">
@@ -57,6 +58,8 @@ const props = defineProps<{
   rangeHi: number
   sortMode: SortMode
   topicLang: TopicLang
+  summaryScopeText: string
+  refreshSecondsLeft: number
 }>()
 
 const emit = defineEmits<{
@@ -90,11 +93,18 @@ const fillStyle = computed(() => ({
 
 const summaryText = computed(() => {
   const total = props.globalStats.total_items
-  const above60 = props.globalStats.above60
+  const above75 = props.globalStats.above75
   if (props.topicLang === 'en') {
-    return `Today, OPENNEWS analyzed ${total} news articles, ${above60} of which scored above 60.`
+    return `In ${props.summaryScopeText}, OPENNEWS analyzed ${total} news articles, ${above75} of which scored above 75.`
   }
-  return `今天，OPENNEWS 分析了 ${total} 篇新闻文章，其中 ${above60} 篇的评分超过 60 分。`
+  return `在${props.summaryScopeText}内，OPENNEWS 分析了 ${total} 篇新闻文章，其中 ${above75} 篇的评分超过 75 分。`
+})
+
+const refreshText = computed(() => {
+  if (props.topicLang === 'en') {
+    return `Auto refresh in ${props.refreshSecondsLeft}s`
+  }
+  return `自动刷新：${props.refreshSecondsLeft}s`
 })
 
 // ── draw chart ──────────────────────────────────────────

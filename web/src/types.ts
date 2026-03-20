@@ -58,14 +58,14 @@ export interface PaginatedResponse {
   total_pages: number
   total_topics: number
   total_items: number
-  above60: number
+  above75: number
   score_bins: number[]
   levels: { '高': number; '中': number; '低': number }
 }
 
 export interface GlobalStats {
   total_items: number
-  above60: number
+  above75: number
   score_bins: number[]
   total_topics: number
   levels: { '高': number; '中': number; '低': number }

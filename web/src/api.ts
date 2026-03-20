@@ -16,7 +16,7 @@ export async function fetchRecords(
   if (Array.isArray(data)) {
     return {
       items: data, page: 1, total_pages: 1, total_topics: 0,
-      total_items: data.length, above60: 0, score_bins: [], levels: { '高': 0, '中': 0, '低': 0 },
+      total_items: data.length, above75: 0, score_bins: [], levels: { '高': 0, '中': 0, '低': 0 },
     }
   }
   return {
@@ -25,7 +25,7 @@ export async function fetchRecords(
     total_pages: data.total_pages || 1,
     total_topics: data.total_topics || 0,
     total_items: data.total_items || 0,
-    above60: data.above60 || 0,
+    above75: data.above75 || 0,
     score_bins: data.score_bins || [],
     levels: data.levels || { '高': 0, '中': 0, '低': 0 },
   }

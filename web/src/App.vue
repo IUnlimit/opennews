@@ -13,6 +13,8 @@
         :range-hi="rangeHi"
         :sort-mode="sortMode"
         :topic-lang="topicLang"
+        :summary-scope-text="summaryScopeText"
+        :refresh-seconds-left="refreshSecondsLeft"
         @update:range-lo="rangeLo = $event; debouncedApplyFilter()"
         @update:range-hi="rangeHi = $event; debouncedApplyFilter()"
         @update:sort-mode="sortMode = $event"
@@ -78,7 +80,7 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const totalTopics = ref(0)
 const globalStats = ref<GlobalStats>({
-  total_items: 0, above60: 0, score_bins: [], total_topics: 0,
+  total_items: 0, above75: 0, score_bins: [], total_topics: 0,
   levels: { '高': 0, '中': 0, '低': 0 },
 })
 const openTopics = reactive(new Set<string>())
@@ -100,6 +102,27 @@ const stats = computed(() => {
     mid: g.levels['中'],
     low: g.levels['低'],
   }
+})
+
+const summaryScopeText = computed(() => {
+  if (source.value.startsWith('hours:')) {
+    const hours = Number.parseFloat(source.value.slice(6))
+    if (!Number.isFinite(hours) || hours <= 0) {
+      return topicLang.value === 'zh' ? '当前时间范围' : 'the selected time range'
+    }
+    if (topicLang.value === 'zh') {
+      if (hours < 24) return `最近 ${hours} 小时`
+      if (hours % 24 === 0) return `最近 ${hours / 24} 天`
+      return `最近 ${hours} 小时`
+    }
+    if (hours < 24) return `the last ${hours} hour${hours === 1 ? '' : 's'}`
+    if (hours % 24 === 0) {
+      const days = hours / 24
+      return `the last ${days} day${days === 1 ? '' : 's'}`
+    }
+    return `the last ${hours} hours`
+  }
+  return topicLang.value === 'zh' ? '当前数据集' : 'the current dataset'
 })
 
 // ── detail ──────────────────────────────────────────────
@@ -169,7 +192,7 @@ async function loadData(src?: string, page?: number) {
       totalTopics.value = result.total_topics
       globalStats.value = {
         total_items: result.total_items,
-        above60: result.above60,
+        above75: result.above75,
         score_bins: result.score_bins,
         total_topics: result.total_topics,
         levels: result.levels,
@@ -184,19 +207,19 @@ async function loadData(src?: string, page?: number) {
       const batchItems = allItems.value
       const bins = new Array(100).fill(0)
       const lvls = { '高': 0, '中': 0, '低': 0 } as Record<string, number>
-      let a60 = 0
+      let a75 = 0
       const topicSet = new Set<number>()
       batchItems.forEach(d => {
         const score = d.report?.final_score ?? 0
         bins[Math.min(99, Math.max(0, Math.floor(score)))]++
-        if (score >= 60) a60++
+        if (score >= 75) a75++
         const level = d.report?.impact_level
         if (level && level in lvls) lvls[level]++
         if (d.topic?.topic_id != null) topicSet.add(d.topic.topic_id)
       })
       globalStats.value = {
         total_items: batchItems.length,
-        above60: a60,
+        above75: a75,
         score_bins: bins,
         total_topics: topicSet.size,
         levels: { '高': lvls['高'] || 0, '中': lvls['中'] || 0, '低': lvls['低'] || 0 },
@@ -227,7 +250,7 @@ async function loadData(src?: string, page?: number) {
     totalPages.value = 1
     totalTopics.value = 0
     globalStats.value = {
-      total_items: 0, above60: 0, score_bins: [], total_topics: 0,
+      total_items: 0, above75: 0, score_bins: [], total_topics: 0,
       levels: { '高': 0, '中': 0, '低': 0 },
     }
     emptyText.value = '暂无数据 — 请先运行后端流水线产出批次数据'
@@ -259,19 +282,19 @@ function onImportJson(items: BatchItem[]) {
   // 从导入数据计算全局统计
   const bins = new Array(100).fill(0)
   const lvls = { '高': 0, '中': 0, '低': 0 } as Record<string, number>
-  let a60 = 0
+  let a75 = 0
   const topicSet = new Set<number>()
   items.forEach(d => {
     const score = d.report?.final_score ?? 0
     bins[Math.min(99, Math.max(0, Math.floor(score)))]++
-    if (score >= 60) a60++
+    if (score >= 75) a75++
     const level = d.report?.impact_level
     if (level && level in lvls) lvls[level]++
     if (d.topic?.topic_id != null) topicSet.add(d.topic.topic_id)
   })
   globalStats.value = {
     total_items: items.length,
-    above60: a60,
+    above75: a75,
     score_bins: bins,
     total_topics: topicSet.size,
     levels: { '高': lvls['高'] || 0, '中': lvls['中'] || 0, '低': lvls['低'] || 0 },
@@ -287,6 +310,7 @@ watch(source, () => {
 
 // ── auto refresh ────────────────────────────────────────
 const autoRefresh = useAutoRefresh(() => loadData())
+const refreshSecondsLeft = computed(() => autoRefresh.secondsLeft.value)
 
 // ── lifecycle ───────────────────────────────────────────
 onMounted(async () => {
