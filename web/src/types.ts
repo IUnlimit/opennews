@@ -79,3 +79,26 @@ export interface TopicGroup {
 
 export type SortMode = 'score' | 'time' | 'avg'
 export type TopicLang = 'zh' | 'en'
+
+// ── 分享图数据 ──────────────────────────────────────────
+export interface ShareData {
+  lang: TopicLang
+  generatedAt: string
+  scopeText: string
+  scoreRange: string
+  totalItems: number
+  filteredCount: number
+  filteredRatio: number
+  above75: number
+  levels: { '高': number; '中': number; '低': number }
+  filteredLevels: { '高': number; '中': number; '低': number }
+  topTopics: ShareTopicItem[]
+}
+
+export interface ShareTopicItem {
+  labelZh: string
+  labelEn: string
+  maxScore: number
+  newsCount: number
+  topLevel: string  // 主题内最高影响等级
+}

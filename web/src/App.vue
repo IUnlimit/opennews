@@ -4,6 +4,8 @@
       <AppHeader
         :topic-lang="topicLang"
         :stats="stats"
+        :sharing="sharing"
+        @share="handleShare"
       />
       <ChartSection
         ref="chartRef"
@@ -47,14 +49,21 @@
     @import-json="onImportJson"
     @update:topic-lang="topicLang = $event"
   />
+
+  <!-- 分享卡片（隐藏，仅用于截图） -->
+  <div class="share-offscreen" aria-hidden="true">
+    <ShareSnapshot v-if="showShareCard" ref="shareRef" :data="shareData" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onUnmounted, provide, nextTick } from 'vue'
-import type { BatchItem, SortMode, TopicLang, GlobalStats } from '@/types'
+import type { BatchItem, SortMode, TopicLang, GlobalStats, ShareData } from '@/types'
 import { fetchRecords, fetchBatch } from '@/api'
 import { useTheme } from '@/composables/useTheme'
 import { useAutoRefresh } from '@/composables/useAutoRefresh'
+import { domToPngBlob, shareOrDownload } from '@/utils/share'
+import { getTopicLabel } from '@/utils'
 
 import AppHeader from '@/components/AppHeader.vue'
 import ChartSection from '@/components/ChartSection.vue'
@@ -62,6 +71,7 @@ import TopicList from '@/components/TopicList.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import DetailPanel from '@/components/DetailPanel.vue'
 import SourceBar from '@/components/SourceBar.vue'
+import ShareSnapshot from '@/components/ShareSnapshot.vue'
 
 // ── theme ───────────────────────────────────────────────
 const { toggle: toggleTheme } = useTheme()
@@ -89,6 +99,87 @@ const emptyText = ref('加载中…')
 const chartRef = ref<InstanceType<typeof ChartSection>>()
 const topicListRef = ref<InstanceType<typeof TopicList>>()
 
+// ── share ────────────────────────────────────────────────
+const sharing = ref(false)
+const showShareCard = ref(false)
+const shareRef = ref<InstanceType<typeof ShareSnapshot>>()
+
+const shareData = computed<ShareData>(() => {
+  const g = globalStats.value
+  const items = filteredItems.value
+  const total = g.total_items || 1
+  const filteredCount = items.length
+  const filteredRatio = (filteredCount / total) * 100
+
+  // 筛选结果内的高/中/低分布
+  const fl = { '高': 0, '中': 0, '低': 0 } as { '高': number; '中': number; '低': number }
+  items.forEach(d => {
+    const lv = d.report?.impact_level
+    if (lv && lv in fl) fl[lv as keyof typeof fl]++
+  })
+
+  // 按主题聚合，取 top 5 主题（按主题内最高分降序）
+  const topicMap = new Map<string, { labelZh: string; labelEn: string; maxScore: number; newsCount: number; topLevel: string }>()
+  items.forEach(d => {
+    const tid = d.topic?.topic_id ?? -1
+    const bid = d.topic?.batch_id ?? 0
+    const key = `${bid}:${tid}`
+    const score = d.report?.final_score ?? 0
+    const level = d.report?.impact_level ?? '低'
+    const labelZh = getTopicLabel(d.topic, 'zh')
+    const labelEn = getTopicLabel(d.topic, 'en')
+    if (!topicMap.has(key)) {
+      topicMap.set(key, { labelZh, labelEn, maxScore: score, newsCount: 1, topLevel: level })
+    } else {
+      const t = topicMap.get(key)!
+      t.newsCount++
+      if (score > t.maxScore) {
+        t.maxScore = score
+        t.topLevel = level
+      }
+    }
+  })
+  const topTopics = [...topicMap.values()]
+    .sort((a, b) => b.maxScore - a.maxScore)
+    .slice(0, 5)
+
+  return {
+    lang: topicLang.value,
+    generatedAt: new Date().toISOString(),
+    scopeText: summaryScopeText.value,
+    scoreRange: `${rangeLo.value.toFixed(0)}–${rangeHi.value.toFixed(0)}`,
+    totalItems: g.total_items,
+    filteredCount,
+    filteredRatio: Math.round(filteredRatio * 10) / 10,
+    above75: g.above75,
+    levels: g.levels,
+    filteredLevels: fl,
+    topTopics,
+  }
+})
+
+async function handleShare() {
+  if (sharing.value) return
+  sharing.value = true
+  showShareCard.value = true
+
+  try {
+    // 等待 DOM 渲染
+    await nextTick()
+    await new Promise(r => setTimeout(r, 100))
+
+    const el = shareRef.value?.rootRef
+    if (!el) throw new Error('share card not ready')
+
+    const blob = await domToPngBlob(el)
+    await shareOrDownload(blob)
+  } catch (err) {
+    console.error('share failed:', err)
+  } finally {
+    sharing.value = false
+    showShareCard.value = false
+  }
+}
 // ── persist lang ────────────────────────────────────────
 watch(topicLang, (v) => localStorage.setItem('topicLang', v))
 

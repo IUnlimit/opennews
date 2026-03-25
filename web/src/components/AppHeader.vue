@@ -25,6 +25,21 @@
       <span class="hdr-badge hdr-badge--low">{{ topicLang === 'zh' ? '低' : 'L' }} {{ stats.low }}</span>
     </div>
     <div class="hdr-right">
+      <button
+        class="share-btn"
+        :class="{ loading: sharing }"
+        :disabled="sharing"
+        :title="topicLang === 'zh' ? '生成分享图片' : 'Generate share image'"
+        @click="$emit('share')"
+      >
+        <svg v-if="!sharing" class="share-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        <svg v-else class="share-icon share-icon--spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+      </button>
       <a
         class="github-link"
         href="https://github.com/IUnlimit/opennews"
@@ -46,5 +61,8 @@ import type { TopicLang } from '@/types'
 defineProps<{
   topicLang: TopicLang
   stats: { total: number; topics: number; high: number; mid: number; low: number }
+  sharing: boolean
 }>()
+
+defineEmits<{ share: [] }>()
 </script>

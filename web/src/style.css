@@ -926,3 +926,193 @@ body {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ── share button ─────────────────────────────────────── */
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color .2s, background .2s, transform .2s;
+}
+.share-btn:hover:not(:disabled) {
+  color: var(--accent);
+  background: var(--bg-hover);
+  transform: scale(1.1);
+}
+.share-btn:disabled { opacity: .5; cursor: not-allowed; }
+.share-icon { display: block; }
+.share-icon--spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── share offscreen container ────────────────────────── */
+.share-offscreen {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── share card ───────────────────────────────────────── */
+.share-card {
+  width: 390px;
+  background: #f5f6f8;
+  border-radius: 12px;
+  padding: 24px;
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  color: #374151;
+  overflow: hidden;
+}
+.sc-brand { text-align: center; margin-bottom: 4px; }
+.sc-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.sc-logo-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: #2563eb;
+}
+.sc-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #6b7280;
+}
+.sc-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+.sc-divider {
+  height: 1px;
+  background: #dde1e8;
+  margin: 12px 0;
+}
+.sc-summary {
+  text-align: center;
+  font-size: 12px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+/* metrics 1x4 单行 */
+.sc-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 12px 0;
+}
+.sc-metric-box {
+  background: #ffffff;
+  border: 1px solid #dde1e8;
+  border-radius: 6px;
+  padding: 8px 4px;
+  text-align: center;
+}
+.sc-metric-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  color: #111827;
+}
+.sc-metric-label {
+  font-size: 9px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* chart area — 紧凑，环图更小 */
+.sc-chart-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+.sc-donut-wrap { flex-shrink: 0; }
+.sc-bars { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+.sc-bar-row {}
+.sc-bar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+.sc-bar-track {
+  height: 11px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.sc-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  opacity: .75;
+  min-width: 2px;
+}
+
+/* news section */
+.sc-news-section { margin: 4px 0; }
+.sc-news-title {
+  font-weight: 600;
+  font-size: 11px;
+  color: #111827;
+  margin-bottom: 8px;
+}
+.sc-news-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.sc-news-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+.sc-news-info { flex: 1; min-width: 0; }
+.sc-news-headline {
+  font-size: 11px;
+  color: #374151;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sc-news-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* footer */
+.sc-footer { text-align: center; }
+.sc-footer-note {
+  font-size: 9px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.sc-footer-brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #2563eb;
+}
