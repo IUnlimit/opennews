@@ -6,6 +6,7 @@
   2. /api/batches        — 列出所有批次（按时间倒序）
   3. /api/batches/latest — 读取最新批次的全部记录
   4. /api/batches/<id>   — 读取指定批次的全部记录
+  5. /api/share/default  — 返回默认参数下的分享图片 (SVG)
 
 启动方式：
   python web/server.py [--port 8080]
@@ -17,6 +18,7 @@ import json
 import logging
 import os
 import sys
+import threading
 from http import HTTPStatus
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -37,6 +39,82 @@ def _db():
     return db
 
 
+# ── 分享图缓存 ────────────────────────────────────────────
+_share_cache_lock = threading.Lock()
+_share_cache_svg: str | None = None
+_share_scheduler: object | None = None
+
+
+def _generate_share_cache() -> None:
+    """生成默认分享图并缓存到内存和磁盘。"""
+    global _share_cache_svg
+    try:
+        from opennews.config import settings
+        from opennews.share.service import build_share_data
+        from opennews.share.svg_renderer import render_svg
+
+        data = build_share_data()
+        svg = render_svg(data)
+
+        with _share_cache_lock:
+            _share_cache_svg = svg
+
+        # 写入磁盘缓存
+        cache_path = Path(settings.share_cache_path)
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(svg, encoding="utf-8")
+        logger.info("share cache updated: %s (%d bytes)", cache_path, len(svg))
+    except Exception:
+        logger.exception("failed to generate share cache")
+
+
+def _init_share_scheduler() -> None:
+    """根据配置初始化分享图定时刷新。"""
+    global _share_scheduler
+    from opennews.config import settings
+
+    if not settings.share_api_enabled:
+        logger.info("share API disabled, skipping share cache init")
+        return
+
+    # 启动时先生成一次
+    _generate_share_cache()
+
+    if not settings.share_scheduler_enabled:
+        logger.info("share scheduler disabled, cache generated once")
+        return
+
+    try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(
+            _generate_share_cache,
+            "interval",
+            minutes=settings.share_refresh_minutes,
+        )
+        scheduler.start()
+        _share_scheduler = scheduler
+        logger.info(
+            "share scheduler started, refresh every %d min",
+            settings.share_refresh_minutes,
+        )
+    except ImportError:
+        # APScheduler 不可用时用简单的 Timer 循环
+        def _timer_loop():
+            import time
+            while True:
+                time.sleep(settings.share_refresh_minutes * 60)
+                _generate_share_cache()
+
+        t = threading.Thread(target=_timer_loop, daemon=True)
+        t.start()
+        _share_scheduler = t
+        logger.info(
+            "share timer started (no APScheduler), refresh every %d min",
+            settings.share_refresh_minutes,
+        )
+
+
 class OpenNewsHandler(SimpleHTTPRequestHandler):
     """扩展静态文件服务器，增加 /api/* 路由。"""
 
@@ -54,6 +132,8 @@ class OpenNewsHandler(SimpleHTTPRequestHandler):
             self._handle_read(raw)
         elif self.path.startswith("/api/records"):
             self._handle_records()
+        elif self.path == "/api/share/default":
+            self._handle_share_default()
         else:
             super().do_GET()
 
@@ -132,6 +212,38 @@ class OpenNewsHandler(SimpleHTTPRequestHandler):
             logger.exception("get records since %s hours failed", hours)
             self._json_error(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
+    def _handle_share_default(self):
+        """GET /api/share/default — 返回默认参数下的分享图片 (SVG)。"""
+        from opennews.config import settings
+
+        if not settings.share_api_enabled:
+            self._json_error("share API is disabled", HTTPStatus.NOT_FOUND)
+            return
+
+        global _share_cache_svg
+        svg = None
+        with _share_cache_lock:
+            svg = _share_cache_svg
+
+        # 若缓存为空，尝试即时生成一次
+        if svg is None:
+            _generate_share_cache()
+            with _share_cache_lock:
+                svg = _share_cache_svg
+
+        if svg is None:
+            self._json_error("no share image available", HTTPStatus.SERVICE_UNAVAILABLE)
+            return
+
+        body = svg.encode("utf-8")
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "image/svg+xml; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "public, max-age=60")
+        self.end_headers()
+        self.wfile.write(body)
+
     # ── 响应工具 ──────────────────────────────────────────
     def _json_response(self, obj, status=HTTPStatus.OK):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -163,6 +275,12 @@ def main():
         logger.info("PostgreSQL connection OK")
     except Exception:
         logger.exception("PostgreSQL connection failed — server will start but API may error")
+
+    # 初始化分享图缓存与定时刷新
+    try:
+        _init_share_scheduler()
+    except Exception:
+        logger.exception("share scheduler init failed — share API may be unavailable")
 
     server = HTTPServer(("0.0.0.0", args.port), OpenNewsHandler)
     logger.info("OpenNews Web Server listening on http://localhost:%d", args.port)

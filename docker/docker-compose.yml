@@ -148,6 +148,18 @@ services:
       PG_PASSWORD: ${PG_PASSWORD:-123456}
       PG_DATABASE: ${PG_DATABASE:-opennews}
     command: ["python", "web/server.py", "--port", "8080"]
+    volumes:
+      - ./share-cache:/app/data/share
+    environment:
+      SHARE_API_ENABLED: ${SHARE_API_ENABLED:-true}
+      SHARE_SCHEDULER_ENABLED: ${SHARE_SCHEDULER_ENABLED:-true}
+      SHARE_REFRESH_MINUTES: ${SHARE_REFRESH_MINUTES:-30}
+      SHARE_DEFAULT_HOURS: ${SHARE_DEFAULT_HOURS:-24}
+      SHARE_DEFAULT_SCORE_LO: ${SHARE_DEFAULT_SCORE_LO:-50}
+      SHARE_DEFAULT_SCORE_HI: ${SHARE_DEFAULT_SCORE_HI:-100}
+      SHARE_DEFAULT_LANG: ${SHARE_DEFAULT_LANG:-zh}
+      SHARE_DEFAULT_LIMIT: ${SHARE_DEFAULT_LIMIT:-5}
+      SHARE_CACHE_PATH: /app/data/share/default-share.svg
     deploy:
       resources:
         limits:

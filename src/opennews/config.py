@@ -48,5 +48,16 @@ class Settings:
     llm_config_path: str = os.getenv("LLM_CONFIG_PATH", "config/llm.yaml")
     sources_config_path: str = os.getenv("SOURCES_CONFIG_PATH", "config/sources.yaml")
 
+    # 分享图片功能
+    share_api_enabled: bool = os.getenv("SHARE_API_ENABLED", "true").lower() in ("true", "1", "yes")
+    share_scheduler_enabled: bool = os.getenv("SHARE_SCHEDULER_ENABLED", "true").lower() in ("true", "1", "yes")
+    share_refresh_minutes: int = int(os.getenv("SHARE_REFRESH_MINUTES", "30"))
+    share_default_hours: float = float(os.getenv("SHARE_DEFAULT_HOURS", "24"))
+    share_default_score_lo: float = float(os.getenv("SHARE_DEFAULT_SCORE_LO", "50"))
+    share_default_score_hi: float = float(os.getenv("SHARE_DEFAULT_SCORE_HI", "100"))
+    share_default_lang: str = os.getenv("SHARE_DEFAULT_LANG", "zh")
+    share_default_limit: int = int(os.getenv("SHARE_DEFAULT_LIMIT", "5"))
+    share_cache_path: str = os.getenv("SHARE_CACHE_PATH", "data/share/default-share.svg")
+
 
 settings = Settings()

@@ -364,3 +364,91 @@ def update_topic_labels(updates: list[tuple[int, dict]]) -> int:
                 updated += cur.rowcount
     logger.info("updated %d/%d topic labels in DB", updated, len(updates))
     return updated
+
+
+# ── 分享图数据查询 ─────────────────────────────────────
+
+def get_share_snapshot_data(
+    hours: float = 24,
+    score_lo: float = 50,
+    score_hi: float = 100,
+    limit: int = 5,
+) -> dict:
+    """获取分享图所需的摘要数据（不分页）。
+
+    Returns:
+        {
+            "total_items": int,
+            "above75": int,
+            "score_bins": list[int],   # 100 档
+            "levels": {"高": int, "中": int, "低": int},
+            "filtered_count": int,
+            "filtered_levels": {"高": int, "中": int, "低": int},
+            "top_items": list[dict],   # 按分数降序取 top N
+        }
+    """
+    import math
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT DISTINCT ON (COALESCE(br.news_url, br.id::text)) "
+                "br.batch_id, br.payload "
+                "FROM batch_records br "
+                "JOIN batches b ON br.batch_id = b.batch_id "
+                "WHERE b.created_at >= now() - interval '%s hours' "
+                "ORDER BY COALESCE(br.news_url, br.id::text), br.id DESC",
+                (hours,),
+            )
+            all_records = []
+            for row in cur.fetchall():
+                bid, payload = row[0], row[1]
+                topic = payload.get("topic")
+                if topic and "batch_id" not in topic:
+                    topic["batch_id"] = bid
+                all_records.append(payload)
+
+    # 全局统计
+    total_items = len(all_records)
+    above75 = 0
+    score_bins = [0] * 100
+    levels: dict[str, int] = {"高": 0, "中": 0, "低": 0}
+    for r in all_records:
+        report = r.get("report") or {}
+        s = report.get("final_score", 0)
+        idx = min(99, max(0, int(s)))
+        score_bins[idx] += 1
+        if s >= 75:
+            above75 += 1
+        level = report.get("impact_level")
+        if level in levels:
+            levels[level] += 1
+
+    # 筛选
+    filtered = [
+        r for r in all_records
+        if score_lo <= (r.get("report") or {}).get("final_score", 0) <= score_hi
+    ]
+    filtered_count = len(filtered)
+    filtered_levels: dict[str, int] = {"高": 0, "中": 0, "低": 0}
+    for r in filtered:
+        level = (r.get("report") or {}).get("impact_level")
+        if level in filtered_levels:
+            filtered_levels[level] += 1
+
+    # Top N
+    filtered.sort(
+        key=lambda r: (r.get("report") or {}).get("final_score", 0),
+        reverse=True,
+    )
+    top_items = filtered[:limit]
+
+    return {
+        "total_items": total_items,
+        "above75": above75,
+        "score_bins": score_bins,
+        "levels": levels,
+        "filtered_count": filtered_count,
+        "filtered_levels": filtered_levels,
+        "top_items": top_items,
+    }
