@@ -3,5 +3,9 @@ docker/
 __pycache__/
 *.pyc
 .env
+.venv/
+.pytest_cache/
+.mypy_cache/
 CLAUDE.md
 web/node_modules/
+web/dist/

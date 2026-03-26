@@ -81,6 +81,7 @@ services:
 
   # ── OpenNews 后端 (流水线) ──────────────────────────────
   backend:
+    image: opennews-backend:latest
     build:
       context: ..
       dockerfile: Dockerfile
@@ -131,9 +132,10 @@ services:
 
   # ── OpenNews 前端 (Web 面板) ────────────────────────────
   web:
+    image: opennews-web:latest
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.web
     container_name: opennews-web
     restart: unless-stopped
     depends_on:
@@ -141,16 +143,15 @@ services:
         condition: service_healthy
     ports:
       - "${WEB_PORT:-8080}:8080"
+    command: ["python", "web/server.py", "--port", "8080"]
+    volumes:
+      - ./share-cache:/app/data/share
     environment:
       PG_HOST: postgres
       PG_PORT: "5432"
       PG_USER: ${PG_USER:-postgres}
       PG_PASSWORD: ${PG_PASSWORD:-123456}
       PG_DATABASE: ${PG_DATABASE:-opennews}
-    command: ["python", "web/server.py", "--port", "8080"]
-    volumes:
-      - ./share-cache:/app/data/share
-    environment:
       SHARE_API_ENABLED: ${SHARE_API_ENABLED:-true}
       SHARE_SCHEDULER_ENABLED: ${SHARE_SCHEDULER_ENABLED:-true}
       SHARE_REFRESH_MINUTES: ${SHARE_REFRESH_MINUTES:-30}

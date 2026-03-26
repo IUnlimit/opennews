@@ -5,7 +5,9 @@ CLAUDE.md
 docker/postgres/
 docker/neo4j/
 docker/redis/
+docker/share-cache/
 seeds/
+data/
 .venv/
 
 # frontend
