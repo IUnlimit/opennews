@@ -58,6 +58,11 @@ class Settings:
     share_default_lang: str = os.getenv("SHARE_DEFAULT_LANG", "zh")
     share_default_limit: int = int(os.getenv("SHARE_DEFAULT_LIMIT", "5"))
     share_cache_path: str = os.getenv("SHARE_CACHE_PATH", "data/share/default-share.svg")
+    share_cache_dir: str = os.getenv("SHARE_CACHE_DIR", "data/share")
+    share_default_width: int = int(os.getenv("SHARE_DEFAULT_WIDTH", "390"))
+    share_default_pixel_ratio: float = float(os.getenv("SHARE_DEFAULT_PIXEL_RATIO", "2"))
+    share_default_background: str = os.getenv("SHARE_DEFAULT_BACKGROUND", "#f5f6f8")
+    share_render_timeout_ms: int = int(os.getenv("SHARE_RENDER_TIMEOUT_MS", "15000"))
 
 
 settings = Settings()
