@@ -110,7 +110,7 @@ git clone https://github.com/user/opennews.git && cd opennews
 python3.10 -m venv .venv
 source .venv/bin/activate
 
-pip install -r requirements.txt
+pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 ```
 
 The following HuggingFace models are downloaded automatically on first run (~1.5 GB total):

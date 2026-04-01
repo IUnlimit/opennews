@@ -72,7 +72,7 @@ echo ""
 #  2. 安装 Python 依赖
 # ══════════════════════════════════════════════════════════
 info "检查 Python 依赖..."
-if pip install -q -r "$ROOT/requirements.txt" 2>&1 | tail -1; then
+if pip install -q --extra-index-url https://download.pytorch.org/whl/cpu -r "$ROOT/requirements.txt" 2>&1 | tail -1; then
     ok "Python 依赖已就绪"
 else
     fail "依赖安装失败，请检查 requirements.txt"

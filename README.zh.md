@@ -108,7 +108,7 @@ git clone https://github.com/user/opennews.git && cd opennews
 python3.10 -m venv .venv
 source .venv/bin/activate
 
-pip install -r requirements.txt
+pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 ```
 
 首次运行时自动下载以下 HuggingFace 模型（共约 1.5 GB）：
