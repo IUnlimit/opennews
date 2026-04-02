@@ -2,7 +2,7 @@
 
 # OpenNews
 
-Real-time financial news knowledge graph & impact assessment system
+Real-time financial news knowledge graph and impact scoring system.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -13,16 +13,41 @@ Real-time financial news knowledge graph & impact assessment system
 ---
 
 <p align="center">
-  <img src="docs/view.png" alt="OpenNews Web Panel" width="800" />
+  <img src="docs/view.png" alt="OpenNews Web Panel" width="820" />
 </p>
+
+## Contents
+
+- [Overview](#overview)
+- [Pipeline](#pipeline)
+- [Quick Start (Docker)](#quick-start-docker)
+- [Local Setup](#local-setup)
+- [Web APIs](#web-apis)
+  - [Share Snapshot API (PNG)](#share-snapshot-api-png)
+- [Configuration](#configuration)
+- [News Input](#news-input)
+- [Project Structure](#project-structure)
+- [License](#license)
 
 ## Overview
 
-OpenNews is a LangGraph-orchestrated pipeline that ingests multi-platform financial news, performs NLP analysis (NER, topic clustering, zero-shot classification, 7-dimension feature extraction), maintains temporal memory, computes DK-CoT impact scores (0-100), and persists everything into a Neo4j knowledge graph and PostgreSQL database. A built-in web dashboard lets you browse, filter, and inspect results in real time.
+OpenNews is a LangGraph-based pipeline for financial news analysis.
+It ingests multi-source news, runs NLP and impact scoring, then persists results to PostgreSQL and Neo4j, with a built-in web dashboard for real-time filtering and inspection.
 
-### Pipeline DAG
+### Highlights
 
-```
+- Multi-source ingestion (NewsNow API + JSONL seeds)
+- FinBERT embedding + online topic clustering
+- DeBERTa zero-shot classification
+- 7-dimension feature extraction
+- DK-CoT impact score (`0-100`)
+- Redis temporal memory (rolling window)
+- Bilingual topic labels (`zh`/`en`) with retry
+- Web dashboard + share snapshot generation
+
+## Pipeline
+
+```text
 retry_labels → fetch_news → embed → extract_entities ─┬→ topics ──────────┐
                                                       ├→ classify ────────┤
                                                       └→ extract_features ┘
@@ -34,176 +59,155 @@ retry_labels → fetch_news → embed → extract_entities ─┬→ topics ─�
                                                            report → write_graph → END
 ```
 
-After `extract_entities`, three branches run in parallel (BERTopic clustering / DeBERTa zero-shot classification / 7-dim feature extraction), then converge into temporal memory aggregation, DK-CoT impact scoring, and graph persistence. At the start of each round, `retry_labels` re-translates any topic labels that previously failed localization (marked with `[EN]`/`[ZH]` prefixes).
+## Quick Start (Docker)
 
-### Key Features
-
-- Multi-source ingestion — NewsNow API, JSONL seed files
-- FinBERT embeddings (768-dim) + hierarchical cosine-threshold clustering
-- DeBERTa-v3 zero-shot classification (financial / policy / company / macro / industry)
-- 7-dimension news-value scoring (market impact, price signal, regulatory risk, timeliness, impact, controversy, generalizability)
-- Redis-backed 30-day rolling temporal memory with daily sentiment aggregation
-- DK-CoT 4-dimension impact scoring: stock relevance (40%), market sentiment (20%), policy risk (20%), spread breadth (20%)
-- LLM-powered topic refinement with bilingual (zh/en) labels and automatic retry for failed translations
-- Neo4j knowledge graph (News / Entity / Topic nodes + MENTIONS / IN_TOPIC / IMPACTS relations)
-- PostgreSQL batch persistence with URL-based deduplication
-- Real-time web dashboard with score distribution chart, dual-range slider, and detail panel
-
-## Requirements
-
-| Service | Purpose | Required | Default Address |
-|---------|---------|----------|-----------------|
-| PostgreSQL 16+ | Primary storage | Yes | Internal only (container network) |
-| Neo4j 5+ | Knowledge graph | No (skipped if unavailable) | Internal only (container network) |
-| Redis 7+ | Temporal memory | No (falls back to in-memory) | Internal only (container network) |
-
-Only the web dashboard port (default `8080`) is exposed to the host. All infrastructure services communicate through the Docker internal network.
-
-### Quick Start with Docker
-
-The backend container loads NLP models from the host's HuggingFace cache (`~/.cache/huggingface`) in offline mode. Download models on the host first if you haven't already:
+> Recommended for first run.
 
 ```bash
-# Download models on the host (one-time, ~1.5 GB)
-pip install sentence-transformers transformers
-python -c "
-from sentence_transformers import SentenceTransformer
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
-SentenceTransformer('ProsusAI/finbert')
-pipeline('ner', model='dslim/bert-base-NER')
-AutoTokenizer.from_pretrained('MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')
-AutoModelForSequenceClassification.from_pretrained('MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')
-"
-
-# Start everything
+# Start full stack (PostgreSQL + Neo4j + Redis + backend + web)
 docker compose -f docker/docker-compose.yml up -d
 
-# Verify
+# Check status
 docker compose -f docker/docker-compose.yml ps
-```
 
-If your HuggingFace cache is in a non-default location, set `HF_HOME`:
-
-```bash
-HF_HOME=/path/to/your/cache docker compose -f docker/docker-compose.yml up -d
-```
-
-This brings up PostgreSQL, Neo4j, Redis, the backend pipeline, and the web dashboard. All data is persisted to local directories under `docker/` (postgres, neo4j, redis). The `seeds/` and `config/` directories are mounted into the backend container, so you can edit news sources and seed files on the host and they take effect immediately.
-
-Data volumes:
-
-| Service | Host Path | Container Path |
-|---------|-----------|----------------|
-| PostgreSQL | `docker/postgres/` | `/var/lib/postgresql/data` |
-| Neo4j | `docker/neo4j/data/`, `docker/neo4j/logs/` | `/data`, `/logs` |
-| Redis | `docker/redis/` | `/data` |
-| Backend config | `config/` | `/app/config` |
-| Backend seeds | `seeds/` | `/app/seeds` |
-
-Web dashboard: http://localhost:8080 (configurable via `WEB_PORT`)
-
-## Installation
-
-```bash
-git clone https://github.com/user/opennews.git && cd opennews
-
-python3.10 -m venv .venv
-source .venv/bin/activate
-
-pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
-```
-
-The following HuggingFace models are downloaded automatically on first run (~1.5 GB total):
-
-| Model | Purpose | Size |
-|-------|---------|------|
-| `ProsusAI/finbert` | Financial text embedding + BERTopic | ~440 MB |
-| `dslim/bert-base-NER` | Named entity recognition | ~430 MB |
-| `MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli` | Zero-shot classification + feature extraction | ~440 MB |
-
-## Usage
-
-### Docker (recommended)
-
-```bash
-# Start all services including backend pipeline and web dashboard
-docker compose -f docker/docker-compose.yml up -d
-
-# View logs
+# Backend logs
 docker compose -f docker/docker-compose.yml logs -f backend
 
 # Stop
 docker compose -f docker/docker-compose.yml down
 ```
 
-### Local Development
+Web dashboard: `http://localhost:8080` (or `WEB_PORT`).
 
-When developing locally outside Docker, you need the infra ports exposed on the host:
+## Local Setup
 
 ```bash
-# Start infra with host-exposed ports
+git clone https://github.com/user/opennews.git && cd opennews
+python3.10 -m venv .venv
+source .venv/bin/activate
+
+# CPU torch wheel comes from the PyTorch index
+pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+```
+
+If you use the PNG share API locally, install browser runtime once:
+
+```bash
+pip install playwright
+playwright install chromium
+```
+
+### Local run (without Docker for app process)
+
+```bash
+# Infra services (example)
 docker run -d --name opennews-pg -p 5432:5432 -e POSTGRES_PASSWORD=123456 -e POSTGRES_DB=opennews postgres:16-alpine
 docker run -d --name opennews-neo4j -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/Aa123456 neo4j:5-community
 docker run -d --name opennews-redis -p 6379:6379 redis:7-alpine
 
-# Run the pipeline
+# Run pipeline
 PYTHONPATH=src python -m opennews.main
 
-# Build the frontend (separate terminal)
+# Build frontend
 cd web && npm install && npx vite build && cd ..
 
-# Run the web dashboard
+# Run web server
 PYTHONPATH=src python web/server.py --port 8080
 ```
 
-Open http://localhost:8080 to browse results.
+## Web APIs
 
-### One-Command Start (legacy)
+### Core Data APIs
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/batches` | List all batches |
+| `GET /api/batches/latest` | Load latest batch records |
+| `GET /api/batches/<id>` | Load records by batch ID |
+| `GET /api/records?hours=N&page=P&score_lo=X&score_hi=Y` | Query recent records with score range |
+
+### Share Snapshot API (PNG)
+
+`GET /api/share/default`
+
+Returns a **PNG image** (`Content-Type: image/png`) rendered with the same layout as the frontend share card.
+
+#### Query Parameters
+
+| Param | Type | Default | Notes |
+|---|---:|---:|---|
+| `hours` | float | `24` | Time window in hours (`0.1 ~ 8760`) |
+| `score_lo` | float | `50` | Lower score bound (`0 ~ 100`) |
+| `score_hi` | float | `100` | Upper score bound (`0 ~ 100`) |
+| `lang` | string | `zh` | `zh` or `en` |
+| `limit` | int | `5` | Number of top topics (`1 ~ 50`) |
+| `width` | int | `390` | Card width (`200 ~ 1200`) |
+| `pixel_ratio` | float | `2` | Output scale (`0.5 ~ 4`) |
+| `background` | string | `#f5f6f8` | Card background color |
+| `cache` | bool | `true` | Read/write cache |
+| `refresh` | bool | `false` | Force re-render and refresh cache |
+
+#### Cache behavior
+
+- `refresh=true`: always re-render.
+- `cache=true` and `refresh=false`: try memory/disk cache first.
+- `cache=false&refresh=false`: render once without cache read/write.
+
+#### Examples
 
 ```bash
-./build.sh
-```
+# Default snapshot
+curl "http://localhost:8080/api/share/default" -o share.png
 
-### Clean All Data
+# English snapshot with custom filter
+curl "http://localhost:8080/api/share/default?lang=en&hours=48&score_lo=60&score_hi=95&limit=3" -o share-en.png
 
-```bash
-./db-clean.sh
+# Force refresh
+curl "http://localhost:8080/api/share/default?refresh=true" -o share-fresh.png
 ```
 
 ## Configuration
 
-All settings can be overridden via environment variables.
+All settings can be overridden by environment variables.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEWS_POLL_INTERVAL_MIN` | Polling interval (minutes) | `5` |
-| `BATCH_SIZE` | Max items per fetch | `32` |
-| `EMBEDDING_MODEL` | Embedding model | `ProsusAI/finbert` |
-| `NER_MODEL` | NER model | `dslim/bert-base-NER` |
-| `NEO4J_URI` | Neo4j connection | `bolt://neo4j:7687` (Docker) / `bolt://127.0.0.1:7687` (local) |
-| `NEO4J_USER` / `NEO4J_PASSWORD` | Neo4j credentials | `neo4j` / `Aa123456` |
-| `CLASSIFIER_MODEL` | Zero-shot model | `MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli` |
-| `REDIS_URL` | Redis connection | `redis://redis:6379/0` (Docker) / `redis://127.0.0.1:6379/0` (local) |
-| `MEMORY_WINDOW_DAYS` | Temporal memory window | `30` |
-| `PG_HOST` / `PG_PORT` / `PG_USER` / `PG_PASSWORD` / `PG_DATABASE` | PostgreSQL | `127.0.0.1` / `5432` / `postgres` / `123456` / `opennews` |
-| `REPORT_ENABLED` | Enable impact reports | `true` |
-| `REPORT_WEIGHT_STOCK` | Stock relevance weight | `0.40` |
-| `REPORT_WEIGHT_SENTIMENT` | Market sentiment weight | `0.20` |
-| `REPORT_WEIGHT_POLICY` | Policy risk weight | `0.20` |
-| `REPORT_WEIGHT_SPREAD` | Spread breadth weight | `0.20` |
-| `LLM_API_KEY` | LLM API key for topic refinement | — |
-| `LLM_BASE_URL` | LLM endpoint (OpenAI-compatible) | — |
-| `LLM_MODEL` | LLM model name | `gpt-4o-mini` |
+### Core
 
-Additional config files:
-- `config/sources.yaml` — News source endpoints and channels
-- `config/llm.yaml` — LLM provider settings and topic refinement prompts
+| Variable | Default | Description |
+|---|---|---|
+| `NEWS_POLL_INTERVAL_MIN` | `5` | Polling interval (minutes) |
+| `BATCH_SIZE` | `32` | Max fetched items per cycle |
+| `EMBEDDING_MODEL` | `ProsusAI/finbert` | Embedding model |
+| `NER_MODEL` | `dslim/bert-base-NER` | NER model |
+| `CLASSIFIER_MODEL` | `MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli` | Zero-shot model |
+| `REDIS_URL` | `redis://127.0.0.1:6379/0` | Redis connection |
+| `MEMORY_WINDOW_DAYS` | `30` | Temporal memory window |
+| `PG_HOST` / `PG_PORT` / `PG_USER` / `PG_PASSWORD` / `PG_DATABASE` | `127.0.0.1` / `5432` / `postgres` / `123456` / `opennews` | PostgreSQL |
+| `NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` | `bolt://127.0.0.1:7687` / `neo4j` / `Aa123456` | Neo4j |
+| `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL` | — / — / `gpt-4o-mini` | Topic refinement LLM |
+
+### Share API
+
+| Variable | Default | Description |
+|---|---|---|
+| `SHARE_API_ENABLED` | `true` | Enable `/api/share/default` |
+| `SHARE_SCHEDULER_ENABLED` | `true` | Enable periodic default-cache warmup |
+| `SHARE_REFRESH_MINUTES` | `30` | Refresh interval for default cache |
+| `SHARE_DEFAULT_HOURS` | `24` | Default `hours` |
+| `SHARE_DEFAULT_SCORE_LO` | `50` | Default `score_lo` |
+| `SHARE_DEFAULT_SCORE_HI` | `100` | Default `score_hi` |
+| `SHARE_DEFAULT_LANG` | `zh` | Default language |
+| `SHARE_DEFAULT_LIMIT` | `5` | Default topic count |
+| `SHARE_DEFAULT_WIDTH` | `390` | Default output width |
+| `SHARE_DEFAULT_PIXEL_RATIO` | `2` | Default output scale |
+| `SHARE_DEFAULT_BACKGROUND` | `#f5f6f8` | Default background |
+| `SHARE_CACHE_DIR` | `data/share` | PNG cache directory |
+| `SHARE_RENDER_TIMEOUT_MS` | `15000` | Render timeout |
 
 ## News Input
 
-### NewsNow API (default)
+### NewsNow API
 
-Configure endpoints in `config/sources.yaml`:
+Configure in `config/sources.yaml`:
 
 ```yaml
 newsnow:
@@ -214,113 +218,25 @@ newsnow:
       - 36kr-quick
 ```
 
-### Seed File (manual / batch)
+### Seed file
 
-Write news items to `seeds/realtime_seeds.jsonl`, one JSON object per line:
+Write one JSON object per line to `seeds/realtime_seeds.jsonl`:
 
 ```jsonl
 {"news_id":"seed-001","title":"Fed hints at slower rate cuts","content":"Officials signal a cautious approach.","source":"seed","url":"seed://seed-001","published_at":"2026-03-09T07:30:00+00:00"}
 ```
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `news_id` | string | Yes | Unique identifier |
-| `title` | string | Yes | Headline |
-| `content` | string | No | Body text (defaults to title) |
-| `source` | string | No | Source tag (default `"seed"`) |
-| `url` | string | No | Original URL |
-| `published_at` | string | No | ISO 8601 timestamp (default: now) |
-
-## Output
-
-### PostgreSQL (primary)
-
-Query via the web API or directly:
-
-```sql
--- Recent high-impact news
-SELECT payload->>'news'->>'title', payload->'report'->>'final_score'
-FROM batch_records br JOIN batches b ON br.batch_id = b.batch_id
-WHERE (payload->'report'->>'impact_level') = '高'
-ORDER BY b.created_at DESC;
-```
-
-### Web API
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/batches` | List all batches |
-| `GET /api/batches/latest` | Latest batch records |
-| `GET /api/batches/<id>` | Records by batch ID |
-| `GET /api/records?hours=N` | Records from last N hours |
-
-### Neo4j Knowledge Graph
-
-Access via Neo4j Browser (requires local development setup with port `7474` exposed, see [Local Development](#local-development)).
-
-```cypher
--- High-impact news
-MATCH (n:News) WHERE n.impact_level = '高'
-RETURN n.title, n.final_impact_score ORDER BY n.final_impact_score DESC
-
--- Topic trends
-MATCH (t:Topic) WHERE t.trend_direction IS NOT NULL
-RETURN t.label, t.trend_direction, t.avg_impact ORDER BY t.avg_impact DESC
-
--- Entity network
-MATCH (e1:Entity)-[r:IMPACTS]->(e2:Entity)
-RETURN e1.name, e2.name, r.weight ORDER BY r.weight DESC LIMIT 20
-```
-
 ## Project Structure
 
-```
+```text
 opennews/
-├── src/opennews/
-│   ├── main.py                        # Entry point
-│   ├── config.py                      # Global settings
-│   ├── db.py                          # PostgreSQL persistence
-│   ├── agents/
-│   │   ├── classifier_agent.py        # DeBERTa zero-shot classification
-│   │   ├── feature_agent.py           # 7-dim feature extraction
-│   │   ├── memory_agent.py            # Temporal aggregation
-│   │   ├── report_agent.py            # DK-CoT impact scoring
-│   │   └── topic_refine_agent.py      # LLM topic refinement
-│   ├── graph/
-│   │   ├── neo4j_client.py            # Neo4j connection & upsert
-│   │   ├── upsert.py                  # GraphPayload builder
-│   │   └── subgraph_query.py          # Subgraph query & community detection
-│   ├── ingest/
-│   │   ├── news_fetcher.py            # Multi-platform parallel fetch
-│   │   ├── sources.py                 # Source config loader
-│   │   ├── checkpoint.py              # Incremental checkpoint
-│   │   └── seed_injector.py           # JSONL seed injection
-│   ├── llm/
-│   │   └── client.py                  # OpenAI-compatible LLM client
-│   ├── memory/
-│   │   └── __init__.py                # Redis temporal store
-│   ├── nlp/
-│   │   ├── embedder.py                # FinBERT embedding
-│   │   └── entity_extractor.py        # NER extraction
-│   ├── topic/
-│   │   └── online_topic_model.py      # Hierarchical cosine clustering
-│   ├── scheduler/
-│   │   └── polling_job.py             # APScheduler polling
-│   └── workflow/
-│       └── langgraph_pipeline.py      # LangGraph DAG
-├── web/
-│   ├── server.py                      # Web server (API + static)
-│   ├── index.html / style.css / app.js
-├── config/
-│   ├── llm.yaml                       # LLM settings
-│   └── sources.yaml                   # News source config
-├── docker/
-│   └── docker-compose.yml             # Full stack: PG + Neo4j + Redis + backend + web
-├── Dockerfile                         # Backend & web image
-├── seeds/
-│   └── realtime_seeds.jsonl           # Seed news
-├── build.sh                           # One-command launcher
-├── db-clean.sh                        # Data cleanup script
+├── src/opennews/            # pipeline, DB, graph, NLP, scheduler
+├── web/                     # frontend + web/server.py
+├── config/                  # llm.yaml, sources.yaml
+├── docker/                  # compose and volumes
+├── seeds/                   # JSONL seed news
+├── build.sh                 # one-command launcher
+├── db-clean.sh              # cleanup script
 └── requirements.txt
 ```
 
