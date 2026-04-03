@@ -243,3 +243,7 @@ opennews/
 ## License
 
 MIT
+
+## Community
+
+- [LinuxDO](https://linux.do)
